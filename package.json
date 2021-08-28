@@ -1,0 +1,21 @@
+{
+  "name": "graphql-parser",
+  "version": "1.0.0",
+  "description": "INSERT",
+  "main": "INSERT.js",
+  "scripts": {
+    "test": "INSERT.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "INSERT"
+  },
+  "keywords": [
+    "INSERT"
+  ],
+  "author": "INSERT",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^27.1.0"
+  }
+}
