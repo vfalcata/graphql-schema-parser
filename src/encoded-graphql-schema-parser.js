@@ -35,11 +35,6 @@ const FIELD_PARAMETER_REGEXP_GROUPS={
     ENCODED_DIRECTIVES: 7
 }
 
-    
-const ENCODED_DIRECTIVE_REGEXP = new RegExp(ENCODING_FLAG+'+\[0-9A-Za-z\]+'+ENCODING_FLAG+'+','gm')
-const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
-    FULL_MATCH: 0,
-}
 
 const UNION_REGEXP =new RegExp(FIELD_DESCRIPTION+'^\\s*\(extend\\s+\)\{0,1\}union\\s+\(\\w+\)\\s*\(\['+ENCODING_FLAG+'\\sA-Za-z0-9\]*\)\\s*=\\s*\(\\|\{0,1\}\[|\\w\\s'+ENCODING_FLAG+'\]+\\|\\s*\\w+\['+ENCODING_FLAG+'\\w\\s\]+\)$','gm');
 const UNION_REGEXP_GROUPS={
@@ -81,7 +76,7 @@ const getUnions = (encodedDirectivesSchemaText,directiveMap)=>{
         const members=unionMatch[UNION_REGEXP_GROUPS.UNION_MEMBERS].trim().split('|').map(line=>line.replace(/\s*/g,'')).filter(line=>line.length>0)
         const directives= getDirectiveProperties(unionMatch[UNION_REGEXP_GROUPS.ENCODED_DIRECTIVES].trim(),directiveMap)
         const isExtended=unionMatch[UNION_REGEXP_GROUPS.EXTENDS_TAG] && true
-        const name =isExtended?match[UNION_REGEXP_GROUPS.NAME]+EXTENSION_NAME_SUFFIX:match[UNION_REGEXP_GROUPS.NAME]
+        const name =isExtended?unionMatch[UNION_REGEXP_GROUPS.NAME]+EXTENSION_NAME_SUFFIX:unionMatch[UNION_REGEXP_GROUPS.NAME]
         const description=unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION]
         results[name]={
             isExtended,

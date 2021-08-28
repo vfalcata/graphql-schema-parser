@@ -1,7 +1,7 @@
 //Since directives can be nested in their parameters, and also since node does have native support for recursion or varible length look around, 
 //directives will have to be parsed separaetely in its own object, and the schemaText must be encoded so that it is simple to use regexp
 
-
+import {randomBytes} from 'crypto'
 const ENCODING_FLAG='%'
 
 // const DIRECTIVE_NO_PARAMETER_REGEXP=/@(\w+)(\s*[,\)\s=\{])/g
@@ -31,6 +31,13 @@ const DIRECTIVE_WITH_PARAMETER_REGEXP_GROUPS = {
     PARAMETERS: 2,
     TAIL:3
 }
+
+    
+const ENCODED_DIRECTIVE_REGEXP = new RegExp(ENCODING_FLAG+'+\[0-9A-Za-z\]+'+ENCODING_FLAG+'+','gm')
+const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
+    FULL_MATCH: 0,
+}
+
 
 const splitDirectivesString=encodedDirectivesString=>[...encodedDirectivesString.matchAll(ENCODED_DIRECTIVE_REGEXP)].map(match => match[ENCODED_DIRECTIVE_REGEXP_GROUPS.FULL_MATCH])
 
@@ -126,5 +133,7 @@ const getDirectiveParameters = (rawParametersFieldText, directivesProperties) =>
 export {
     parseDirectives,
     getDirectiveProperties,
-    ENCODING_FLAG
+    ENCODING_FLAG,
+    ENCODED_DIRECTIVE_REGEXP,
+    ENCODED_DIRECTIVE_REGEXP_GROUPS
 }
