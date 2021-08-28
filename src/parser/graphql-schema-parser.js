@@ -18,11 +18,15 @@ const regArguments = /(([@\w]+)[(]([\w:\s,!]+)[)]{0,1})/g
 const generateRandomId = (byteLength) => {
     return randomBytes(byteLength).toString('hex')
 }
+const ENCODING_FLAG='#'
+const FIELD_DESCRIPTION='(\s*"""([^"]+)"""\s*){0,1}'
+const PARAMETER_DESCRIPTION='(\s*"([^"]+)"\s*){0,1}'
+// const OBJECT_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z@]*){0,1}{([^}]+)}/gm
+const OBJECT_REGEXP = new RegExp(FIELD_DESCRIPTION+'^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z'+ENCODING_FLAG+']*){0,1}{([^}]+)}','gm')
 
-const OBJECT_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z@]*){0,1}{([^}]+)}/gm
+
 
 const OBJECT_TYPE_TAG='type'
-const ENCODING_LABEL='#'
 const OBJECT_REGEXP_GROUPS = {
     DESCRIPTION:2,
     EXTENDS_TAG: 3,
@@ -34,7 +38,10 @@ const OBJECT_REGEXP_GROUPS = {
     BODY: 9,
 }
 
-const FIELD_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[@\w \t]+$)/gm
+// const FIELD_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[@\w \t]+$)/gm
+const FIELD_REGEXP = new RegExp(FIELD_DESCRIPTION+'^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|['+ENCODING_FLAG+'\w \t]+$)','gm')
+
+
 const FIELD_REGEXP_GROUPS={
     DESCRIPTION:2,
     NAME: 3,
@@ -43,14 +50,16 @@ const FIELD_REGEXP_GROUPS={
     ENCODED_DIRECTIVES: 7
 }
 
-const FIELD_PARAMETER_REGEXP=/(\s*"([^"]+)"\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[@\w \t]+$)/gm
+// const FIELD_PARAMETER_REGEXP=/(\s*"([^"]+)"\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[@\w \t]+$)/gm
+const FIELD_PARAMETER_REGEXP=new RegExp(PARAMETER_DESCRIPTION+'^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|['+ENCODING_FLAG+'\w \t]+$)','gm')
 const FIELD_PARAMETER_REGEXP_GROUPS={
     DESCRIPTION:2,
     NAME: 3,
     TYPE: 6,
     ENCODED_DIRECTIVES: 7
 }
-const DIRECTIVE_WITH_PARAMETER_REGEXP = /@(\w*)\s*\(\s*([^\)]+)\)/g
+// const DIRECTIVE_WITH_PARAMETER_REGEXP = /@(\w*)\s*\(\s*([^\)]+)\)/g
+const DIRECTIVE_WITH_PARAMETER_REGEXP = new RegExp('@(\w*)\s*\(\s*([^\)]+)\)','g')
 const DIRECTIVE_WITH_PARAMETER_REGEXP_GROUPS = {
     FULL_MATCH: 0,
     NAME: 1,
@@ -65,13 +74,14 @@ const DIRECTIVE_NO_PARAMETER_REGEXP_GROUPS = {
     TAIL:2
 }
 
-const ENCODED_DIRECTIVE_REGEXP = /@+[0-9A-Za-z]+@+/g
+// const ENCODED_DIRECTIVE_REGEXP = /@+[0-9A-Za-z]+@+/g
+const ENCODED_DIRECTIVE_REGEXP = new RegExp(ENCODING_FLAG+'+[0-9A-Za-z]+'+ENCODING_FLAG+'+','gm')
 const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
     FULL_MATCH: 0,
 }
 
 const UNION_REGEXP =/(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([@\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s@]+\|\s*\w+[@\w\s]+$)/gm
-
+const UNION_REGEXP =new RegExp(FIELD_DESCRIPTION+'^\s*(extend\s+){0,1}union\s+(\w+)\s*(['+ENCODING_FLAG+'\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s'+ENCODING_FLAG+']+\|\s*\w+['+ENCODING_FLAG+'\w\s]+$','gm')
 const UNION_REGEXP_GROUPS={
     DESCRIPTION:2,
     EXTENDS_TAG: 3,
@@ -79,7 +89,8 @@ const UNION_REGEXP_GROUPS={
     ENCODED_DIRECTIVES: 5, 
     UNION_MEMBERS:6,
 }
-const SCALAR_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}scalar\s+(\w+)\s*([@A-Za-z0-9]*)$/gm
+// const SCALAR_REGEXP = /(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}scalar\s+(\w+)\s*([@A-Za-z0-9]*)$/gm
+new RegExp(FIELD_DESCRIPTION+'^\s*(extend\s+){0,1}scalar\s+(\w+)\s*(['+ENCODING_FLAG+'A-Za-z0-9]*)$','gm')
 const SCALAR_REGEXP_GROUPS = {
     DESCRIPTION:2,
     EXTENDS_TAG: 3,
@@ -87,7 +98,8 @@ const SCALAR_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 5
 }
 
-const DIRECTIVE_DEFINITION_REGEXP=/(\s*"""([^"]+)"""\s*){0,1}^\s*directive @\s*(\w+)\s*\({0,1}([\[\]@\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)/gm
+// const DIRECTIVE_DEFINITION_REGEXP=/(\s*"""([^"]+)"""\s*){0,1}^\s*directive @\s*(\w+)\s*\({0,1}([\[\]@\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)/gm
+const DIRECTIVE_DEFINITION_REGEXP=new RegExp(FIELD_DESCRIPTION+'^\s*directive '+ENCODING_FLAG+'\s*(\w+)\s*\({0,1}([\[\]'+ENCODING_FLAG+'\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)','gm')
 const DIRECTIVE_DEFINITION_REGEXP_GROUPS={
     DESCRIPTION:2,
     NAME: 3,
@@ -95,7 +107,8 @@ const DIRECTIVE_DEFINITION_REGEXP_GROUPS={
     DIRECTIVE_LOCATIONS:5 
 }
 
-const ENUM_REGEXP = /(\s*"""([^"]+)"""\s*)^\s*(extend\s+){0,1}enum\s+(\w+){1}([@\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}/gm
+// const ENUM_REGEXP = /(\s*"""([^"]+)"""\s*)^\s*(extend\s+){0,1}enum\s+(\w+){1}([@\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}/gm
+const ENUM_REGEXP = new RegExp(FIELD_DESCRIPTION+'^\s*(extend\s+){0,1}enum\s+(\w+){1}(['+ENCODING_FLAG+'\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}','gm')
 const ENUM_REGEXP_GROUPS = {
     DESCRIPTION:2,
     EXTENDS_TAG: 3,
