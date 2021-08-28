@@ -1,4 +1,4 @@
-import {    parseDirectives,    getDirectiveProperties,ENCODING_FLAG } from './graphql-directive-parser'
+import {    parseDirectives,    getDirectiveProperties,ENCODING_FLAG } from './graphql-directive-parser.js'
 
 
 const FIELD_DESCRIPTION='\(\\s*"""\(\[^"\]+\)"""\\s*\)\{0,1\}'
@@ -169,7 +169,7 @@ const getTypes = (rawGraphQLSchemaText, directivesProperties) => {
                 results[typeLabel][name].description = description
             }
             if (interfaces && interfaces.length>0) {
-                results[typeLabel][name].interfaces = interfaces.split('&').map(interface =>interface.trim()).filter(interface =>interface.length>0)
+                results[typeLabel][name].interfaces = interfaces.split('&').map(anInterface =>anInterface.trim()).filter(anInterface =>anInterface.length>0)
             }
             if (directives) {
                 results[typeLabel][name].directives = getDirectiveProperties(directives, directivesProperties)
@@ -279,24 +279,6 @@ const getFieldProperties = (rawTextFields, directivesProperties) => {
 }
 
 
-const generateSchemaObject = (graphqlSchemaTextString) => {
-    const { encodedDirectivesSchemaText, directiveProperties } = encodeAllDirectives(graphqlSchemaTextString)
-    console.log('enco',directiveProperties)
-    const types = getTypes(encodedDirectivesSchemaText,directiveProperties)
-    console.log('types',types)
-    // // console.log('typessss',types.type.Query_isExtended_.directives.include1.parameters)
-
-    const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)
-    console.log('unions',unions)
-
-    const scalars = getScalars(encodedDirectivesSchemaText,directiveProperties)
-    console.log('scalars',scalars)
-
-    const enums = getEnums(encodedDirectivesSchemaText,directiveProperties)
-    console.log('enums',enums)
-}
-
-generateSchemaObject(file)
 
 export {
     getEnums,

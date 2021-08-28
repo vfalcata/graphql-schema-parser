@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "INSERT",
   "main": "INSERT.js",
+  "type": "module" ,
   "scripts": {
     "test": "INSERT.js"
   },
