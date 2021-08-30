@@ -1,66 +1,36 @@
-import {SchemaType,SchemaTypeAttrs,DirectibleType,DirectibleTypeAttrs,} from './base-type'
-import {ModifiableNameIndex,NamedIndexItem,NamedIndexItemAttrs} from './indexable'
+
+import { DirectibleComponent, DirectibleComponentAttrs,NameIndex } from './component';
 import{
-    EnumType,
-    EnumElement,
-    UnionType,
-    UnionElement,
-    ScalarType,
-    DirectiveDefinitionType,
-} from './elemental'
-import {DirectibleComponentAttrs} from './component'
+    UnionDefinition,
+    EnumDefinition,
+    DirectiveDefinition,
+} from './element-definition'
+import { ObjectDefinition, InterfaceDefinition, InputDefinition } from './fielded-type';
+import { ScalarDefinition } from './base-type';
 
 
-class ObjectType extends SchemaType{
-    implements?:ModifiableNameIndex<ObjectImplementations>
-    constructor(objectTypeAttrs:ObjectTypeAttrs){
-        super(objectTypeAttrs)
-        this.implements=objectTypeAttrs.implements;
-    }
-}
-
-interface ObjectTypeAttrs extends SchemaTypeAttrs{
-    implements?:ModifiableNameIndex<ObjectImplementations>
-}
-
-class ObjectImplementations extends NamedIndexItem{
-    
-}
-
-class InterfaceType extends SchemaType{
-
-}
-
-
-class InputType extends SchemaType{
-
-}
-
-
-
-
-class GraphQLSchema extends DirectibleType{
-    objects:ModifiableNameIndex<ObjectType>;
-    scalars:ModifiableNameIndex<ScalarType>;
-    interfaces:ModifiableNameIndex<InterfaceType>;
-    unions:ModifiableNameIndex<UnionType>;
-    enums:ModifiableNameIndex<EnumType>;
-    inputs:ModifiableNameIndex<InputType>;
-    directiveDefinitions:ModifiableNameIndex<DirectiveDefinitionType>;
+class GraphQLSchema extends DirectibleComponent{
+    objects:NameIndex<ObjectDefinition>;
+    scalars:NameIndex<ScalarDefinition>;
+    interfaces:NameIndex<InterfaceDefinition>;
+    unions:NameIndex<UnionDefinition>;
+    enums:NameIndex<EnumDefinition>;
+    inputs:NameIndex<InputDefinition>;
+    directiveDefinitions:NameIndex<DirectiveDefinition>;
     constructor(graphQLSchemaAttrs:GraphQLSchemaAttrs){
         super(graphQLSchemaAttrs);
-        this.objects=new ModifiableNameIndex<ObjectType>({name:'objects'});
-        this.scalars=new ModifiableNameIndex<ScalarType>({name:'scalars'});
-        this.interfaces=new ModifiableNameIndex<InterfaceType>({name:'interfaces'});
-        this.unions=new ModifiableNameIndex<UnionType>({name:'unions'});
-        this.enums=new ModifiableNameIndex<EnumType>({name:'enums'});
-        this.inputs=new ModifiableNameIndex<InputType>({name:'inputs'});
-        this.directiveDefinitions=new ModifiableNameIndex<DirectiveDefinitionType>({name:'directiveDefinitions'});
+        this.objects=new NameIndex<ObjectDefinition>();
+        this.scalars=new NameIndex<ScalarDefinition>();
+        this.interfaces=new NameIndex<InterfaceDefinition>();
+        this.unions=new NameIndex<UnionDefinition>();
+        this.enums=new NameIndex<EnumDefinition>();
+        this.inputs=new NameIndex<InputDefinition>();
+        this.directiveDefinitions=new NameIndex<DirectiveDefinition>();
     }
 
 }
 
-interface GraphQLSchemaAttrs extends DirectibleComponentAttrs{
+interface GraphQLSchemaAttrs extends DirectibleComponentAttrs {
     name:string
 }
 
@@ -77,9 +47,5 @@ enum GraphQLType {
 
 
 export {
-    ObjectType,
-    ObjectTypeAttrs,
-    InterfaceType,
-    InputType,
-    GraphQLType,
+    GraphQLSchema,
 }

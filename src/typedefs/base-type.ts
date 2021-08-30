@@ -1,50 +1,52 @@
-import{DirectiveAnnotation} from './component'
-import{NamedIndexItem,NamedIndexItemAttrs} from './indexable'
+import { DirectiveAnnotation, NamedComponent } from "./component"
 
-
-interface NamedTypeAttrs extends NamedIndexItemAttrs{
-    description?:string;
-}
-
-abstract class NamedType extends NamedIndexItem {
-    description?:string;
-    constructor(namedtypeAttrs:NamedTypeAttrs){
-        super(namedtypeAttrs)
-        this.description=namedtypeAttrs.description;
-    }
-}
-
-interface DirectibleTypeAttrs extends NamedTypeAttrs{
-    directives?:DirectiveAnnotation
-}
-
-abstract class DirectibleType extends NamedIndexItem {
-    directives?:DirectiveAnnotation
-    constructor(directibleTypeAttrs:DirectibleTypeAttrs){
-        super(directibleTypeAttrs)
-        this.directives=directibleTypeAttrs.directives;
-    }
-}
-
-
-abstract class SchemaType extends DirectibleType{
+abstract class SchemaTypeDefinition extends NamedComponent{
+    description?:string
     isExtended:boolean
-    constructor(schemaTypeAttrs:SchemaTypeAttrs){
-        super(schemaTypeAttrs)
-        this.isExtended=schemaTypeAttrs.isExtended?true:false;
+
+    constructor(schemaTypeDefinitionAttrs:SchemaTypeDefinitionAttrs){
+        super(schemaTypeDefinitionAttrs)
+        this.description=schemaTypeDefinitionAttrs.name;
+        this.isExtended=schemaTypeDefinitionAttrs.isExtended
+    }
+}
+interface SchemaTypeDefinitionAttrs{
+    name:string
+    description?:string
+    isExtended:boolean
+}
+
+abstract class DirectibleSchemaTypeDefinition extends SchemaTypeDefinition{
+    directives?:NameIndex<DirectiveAnnotation>
+
+    constructor(directibleSchemaTypeDefinitionAttrs:DirectibleSchemaTypeDefinitionAttrs){
+        super(directibleSchemaTypeDefinitionAttrs)
+        this.directives=directibleSchemaTypeDefinitionAttrs.directives;
+    }
+}
+interface DirectibleSchemaTypeDefinitionAttrs extends SchemaTypeDefinitionAttrs{
+    directives?:NameIndex<DirectiveAnnotation>
+}
+
+//scalars arent fielded nor elemental 
+class ScalarDefinition extends DirectibleSchemaTypeDefinition{
+    type:string;
+    constructor(scalarTypeAttrs:ScalarTypeAttrs){
+        super(scalarTypeAttrs);
+        this.type=scalarTypeAttrs.type;
     }
 }
 
-interface SchemaTypeAttrs extends DirectibleTypeAttrs{
-    isExtended:boolean
+interface ScalarTypeAttrs extends SchemaTypeDefinitionAttrs{
+    type:string;
 }
 
 
 export {
-    NamedType,
-    NamedTypeAttrs,
-    SchemaType,
-    SchemaTypeAttrs,
-    DirectibleType,
-    DirectibleTypeAttrs,
+    SchemaTypeDefinition,
+    SchemaTypeDefinitionAttrs,
+    DirectibleSchemaTypeDefinition,
+    DirectibleSchemaTypeDefinitionAttrs,
+    ScalarDefinition
+
 }

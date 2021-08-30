@@ -1,16 +1,21 @@
+//NO LONGER NEEDED
 class TypeIndex<TYPE>{
     [index:string]:TYPE;
 }
 
-abstract class NamedIndexItem{
+abstract class NameIndexItem{
     name:string;
-    constructor(namedIndexItemAttrs:NamedIndexItemAttrs){
-        this.name=namedIndexItemAttrs.name;
+    constructor(nameIndexItemAttrs:NameIndexItemAttrs){
+        this.name=nameIndexItemAttrs.name;
     }
 }
 
-interface NamedIndexItemAttrs{
+interface NameIndexItemAttrs{
     name:string;
+}
+
+class NameIndex<TYPE extends NameIndexItem> {
+    [index:string]:TYPE;
 }
 
 interface ModifiableIndex<TYPE>{
@@ -19,9 +24,9 @@ interface ModifiableIndex<TYPE>{
     addMultiple(elements:TYPE[]);
     remove(removeElement:TYPE);
 }
-class ModifiableNameIndex<TYPE extends NamedIndexItem> implements ModifiableIndex<TYPE>{
+class ModifiableNameIndex<TYPE extends NameIndexItem> implements ModifiableIndex<TYPE>{
     nameIndex:TypeIndex<TYPE>;
-    name:string;
+    name?:string;
     constructor(modifiableNameIndexAttrs:ModifiableNameIndexAttrs<TYPE>){
         this.nameIndex=modifiableNameIndexAttrs.nameIndex?modifiableNameIndexAttrs.nameIndex:new TypeIndex<TYPE>();
         this.name=modifiableNameIndexAttrs.name;
@@ -48,16 +53,7 @@ class ModifiableNameIndex<TYPE extends NamedIndexItem> implements ModifiableInde
     };
 }
 
-interface ModifiableNameIndexAttrs<TYPE extends NamedIndexItem>{
+interface ModifiableNameIndexAttrs<TYPE extends NameIndexItem>{
     nameIndex?:TypeIndex<TYPE>;
     name:string;
-}
-
-export {
-    ModifiableIndex,
-    ModifiableNameIndex,
-    TypeIndex,
-    NamedIndexItem,
-    NamedIndexItemAttrs,
-    
 }

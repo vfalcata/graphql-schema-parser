@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "INSERT",
   "main": "INSERT.js",
-  "type": "module" ,
   "scripts": {
-    "test": "INSERT.js"
+    "test": "INSERT.js",
+    "exec": "tsc src/ts-parser/parser-typedefs/directive-properties.ts && node src/ts-parser/parser-typedefs/directive-properties.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   "author": "INSERT",
   "license": "ISC",
   "devDependencies": {
-    "jest": "^27.1.0"
+    "jest": "^27.1.0",
+    "typescript": "^4.4.2"
   }
 }

@@ -2,14 +2,21 @@
 //directives will have to be parsed separaetely in its own object, and the schemaText must be encoded so that it is simple to use regexp
 
 import {randomBytes} from 'crypto'
+import { DirectiveAnnotation, ParameterComponent,NameIndex } from '../typedefs/component'
 const ENCODING_FLAG='%'
 
+const ENCODED_ID_BYTE_LENGTH = 6
 // const DIRECTIVE_NO_PARAMETER_REGEXP=/@(\w+)(\s*[,\)\s=\{])/g
 const DIRECTIVE_NO_PARAMETER_REGEXP=new RegExp('@\(\\w+\)\(\\s*\[,\\)\\s=\\{\])','g')//g
 const DIRECTIVE_NO_PARAMETER_REGEXP_GROUPS = {
     FULL_MATCH: 0,
     NAME: 1,
     TAIL:2
+}
+
+
+const generateDirectiveId = (height:number):string => {
+    return ENCODING_FLAG.repeat(height) +ENCODING_FLAG+ randomBytes(ENCODED_ID_BYTE_LENGTH).toString('hex') +ENCODING_FLAG+ ENCODING_FLAG.repeat(height)
 }
 
 
@@ -39,16 +46,15 @@ const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
 }
 
 
-const splitDirectivesString=encodedDirectivesString=>[...encodedDirectivesString.matchAll(ENCODED_DIRECTIVE_REGEXP)].map(match => match[ENCODED_DIRECTIVE_REGEXP_GROUPS.FULL_MATCH])
-
-const getDirectiveProperties = (encodedDirectivesString, directivesProperties) => {
-    let result = {}
-    if(!encodedDirectivesString || encodedDirectivesString.length<1 || !encodedDirectivesString.includes(ENCODING_FLAG)){
+//parses component with annotated encoded directive annotations, and gets them from directtive properties a compiles them and returns them
+const getDirectiveProperties = (encodedDirectiveComponent:string, directivesProperties:NameIndex<DirectiveAnnotation>):NameIndex<DirectiveAnnotation> => {
+    let result = new NameIndex<DirectiveAnnotation>();
+    if(!encodedDirectiveComponent || encodedDirectiveComponent.length<1 || !encodedDirectiveComponent.includes(ENCODING_FLAG)){
         return;
     }
-    const encodedDirectiveMatches = splitDirectivesString(encodedDirectivesString)
+    const encodedDirectiveMatches = [...encodedDirectiveComponent.matchAll(ENCODED_DIRECTIVE_REGEXP)].map(match => match[ENCODED_DIRECTIVE_REGEXP_GROUPS.FULL_MATCH])
     encodedDirectiveMatches.forEach((directiveId) => {
-        const directiveName = directivesProperties[directiveId].name
+        const directiveName = directivesProperties.nameIndex[directiveId].name
         result[directiveName] = directivesProperties[directiveId]
     })
     return result
@@ -58,8 +64,8 @@ const getDirectiveProperties = (encodedDirectivesString, directivesProperties) =
 //height 0 = directive no params
 //height 1 = directive with non directive params
 //height 1+ = directive with params that have directives
-const parseDirectives = (rawGraphQLSchemaText)=>{
-    let directiveProperties={}
+const parseDirectives = (rawGraphQLSchemaText:string):{encodedDirectivesSchemaText:string,directiveProperties:NameIndex<DirectiveAnnotation>}=>{
+    let directiveProperties=new NameIndex<DirectiveAnnotation>()
     let encodedDirectivesSchemaText=rawGraphQLSchemaText
     let height=0
     let curretRegExp=DIRECTIVE_NO_PARAMETER_REGEXP
@@ -97,33 +103,28 @@ const parseDirectives = (rawGraphQLSchemaText)=>{
     }
 }
 
-const generateRandomId = (byteLength) => {
-    return randomBytes(byteLength).toString('hex')
-}
-const generateDirectiveId = (height) => {
-    return ENCODING_FLAG.repeat(height) +ENCODING_FLAG+ generateRandomId(6) +ENCODING_FLAG+ ENCODING_FLAG.repeat(height)
-}
 
 
-const getDirectiveParameters = (rawParametersFieldText, directivesProperties) => {
-    let directiveParameters = {}
-    let usedDirectives = []
+//parses parameters inside directives, pull encoded directives from directiveProperties, and deletes ones that have been used
+const getDirectiveParameters = (rawParametersFieldText:string, directivesProperties:NameIndex<DirectiveAnnotation>):NameIndex<ParameterComponent> => {
+    let directiveParameters = new NameIndex<ParameterComponent>();
     rawParametersFieldText.split(',').map(line=>line.trim()).filter(line=>line.length>0).forEach((parameter) => {
         const parameterName = parameter.split(':')[0].trim()
         let parameterType = parameter.split(':')[1]
         const directivesForParameter = [...parameter.matchAll(ENCODED_DIRECTIVE_REGEXP)].map(match => match[ENCODED_DIRECTIVE_REGEXP_GROUPS.FULL_MATCH].trim());
-        directiveParameters[parameterName] = {
+        directiveParameters[parameterName]= new ParameterComponent({
             name: parameterName,
             type: parameterType
-        }
+        })
 
+        let directives:NameIndex<DirectiveAnnotation>;
         directivesForParameter.forEach((parameterDirectiveId) => {
-            parameterType = parameterType.replace(parameterDirectiveId, '').trim()
-            let directives;
-            directiveParameters[parameterName] = {
-                directives: directivesProperties[parameterDirectiveId],
-                type: parameterType
+            if(! directiveParameters[parameterName].directives){
+                directiveParameters[parameterName].directives=new NameIndex<DirectiveAnnotation>();
             }
+            let directive = directivesProperties[parameterDirectiveId]
+            directiveParameters[parameterName].type =parameterType.replace(parameterDirectiveId, '').trim()
+            directiveParameters[parameterName].directives[directive.name]=directive
             delete directivesProperties[parameterDirectiveId]
         })
     })
