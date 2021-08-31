@@ -128,7 +128,7 @@ var getUnions = function (encodedDirectivesSchemaText, directiveProperties) {
         var directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(unionMatch[UNION_REGEXP_GROUPS.ENCODED_DIRECTIVES].trim(), directiveProperties);
         var isExtended = unionMatch[UNION_REGEXP_GROUPS.EXTENDS_TAG] ? true : false;
         var name = isExtended ? unionMatch[UNION_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : unionMatch[UNION_REGEXP_GROUPS.NAME];
-        var description = unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION];
+        var description = unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION] ? unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION].trim() : unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION];
         results[name] = {
             isExtended: isExtended,
             name: name,
@@ -145,7 +145,7 @@ var getScalars = function (encodedDirectivesSchemaText, directiveProperties) {
     var results = {};
     scalarMatches.forEach(function (scalarMatch) {
         var directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(scalarMatch[SCALAR_REGEXP_GROUPS.ENCODED_DIRECTIVES].trim(), directiveProperties);
-        var description = scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION];
+        var description = scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION] ? scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION].trim() : scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION];
         var isExtended = scalarMatch[SCALAR_REGEXP_GROUPS.EXTENDS_TAG] ? true : false;
         var name = isExtended ? scalarMatch[SCALAR_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : scalarMatch[SCALAR_REGEXP_GROUPS.NAME];
         results[name] = {
@@ -166,7 +166,7 @@ var getDirectiveDefinitions = function (encodedDirectivesSchemaText, directivePr
         var directive = directiveProperties[directiveId];
         var name = directive.name;
         var parameters = directive.parameters;
-        var description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION];
+        var description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION] ? directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim() : directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION];
         var isExtended = false;
         var elements = {};
         directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE_LOCATIONS]
@@ -209,7 +209,7 @@ var getFieldedTypes = function (encodedDirectivesSchemaText, directiveProperties
         var name = isExtended ? match[OBJECT_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : match[OBJECT_REGEXP_GROUPS.NAME];
         var interfaces = match[OBJECT_REGEXP_GROUPS.IMPLEMENTS];
         var rawTextFields = match[OBJECT_REGEXP_GROUPS.BODY];
-        var description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION];
+        var description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION] ? match[OBJECT_REGEXP_GROUPS.DESCRIPTION].trim() : match[OBJECT_REGEXP_GROUPS.DESCRIPTION];
         if (name && typeLabel && rawTextFields) {
             if (typeLabel === 'input') {
                 result = new fielded_type_js_1.InputDefinition({ name: name, isExtended: isExtended });
@@ -235,7 +235,7 @@ var getFieldedTypes = function (encodedDirectivesSchemaText, directiveProperties
                 result = object;
             }
             if (description) {
-                result.description = description;
+                result.description = description.trim();
             }
             if (encodedDirectives) {
                 result.directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(encodedDirectives, directiveProperties);
@@ -270,7 +270,7 @@ var getParameterProperties = function (rawParametersText, directiveProperties) {
         if (name && type) {
             results[name] = new component_js_1.DescribableParameterComponent({ name: name, type: type });
             if (description) {
-                results[name].description = description;
+                results[name].description = description.trim();
             }
             if (directives) {
                 results[name].directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(directives, directiveProperties);
@@ -293,7 +293,7 @@ var getParameterFieldProperties = function (rawTextFields, directiveProperties) 
         if (name && type) {
             results[name] = new component_js_1.ParameterFieldDefinition({ name: name, type: type });
             if (description) {
-                results[name].description = description;
+                results[name].description = description.trim();
             }
             if (directives) {
                 results[name].directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(directives, directiveProperties);
@@ -319,7 +319,7 @@ var getInputFieldProperties = function (rawTextFields, directiveProperties) {
         if (name && type) {
             results[name] = new component_js_1.InputFieldDefinition({ name: name, type: type });
             if (description) {
-                results[name].description = description;
+                results[name].description = description.trim();
             }
             if (directives) {
                 results[name].directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(directives, directiveProperties);
@@ -342,7 +342,7 @@ var getEnums = function (encodedDirectivesSchemaText, directiveProperties) {
         var name = isExtended ? match[ENUM_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : match[ENUM_REGEXP_GROUPS.NAME];
         var directives = (0, graphql_directive_parser_js_1.getDirectiveProperties)(match[ENUM_REGEXP_GROUPS.ENCODED_DIRECTIVES], directiveProperties);
         var elements = getEnumElements(match[ENUM_REGEXP_GROUPS.ELEMENTS], directiveProperties);
-        var description = match[ENUM_REGEXP_GROUPS.DESCRIPTION];
+        var description = match[ENUM_REGEXP_GROUPS.DESCRIPTION] ? match[ENUM_REGEXP_GROUPS.DESCRIPTION].trim() : match[ENUM_REGEXP_GROUPS.DESCRIPTION];
         results[name] = {
             name: name,
             isExtended: isExtended,

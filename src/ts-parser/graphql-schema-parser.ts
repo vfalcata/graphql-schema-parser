@@ -18,7 +18,7 @@ const generateSchemaObject = ():GraphQLSchema => {
     console.log('encodedDirectivesSchemaText',encodedDirectivesSchemaText)
     console.log('directiveProperties',directiveProperties)
     const types = getFieldedTypes(encodedDirectivesSchemaText,directiveProperties)
-    console.log('types',types.objects!.Query_isExtended_.fields!.users.parameters)
+    console.log('types',types)
     // // console.log('typessss',types.type.Query_isExtended_.directives.include1.parameters)
 
     const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)

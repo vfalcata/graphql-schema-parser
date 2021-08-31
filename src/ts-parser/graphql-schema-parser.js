@@ -11,7 +11,7 @@ var generateSchemaObject = function () {
     console.log('encodedDirectivesSchemaText', encodedDirectivesSchemaText);
     console.log('directiveProperties', directiveProperties);
     var types = (0, encoded_graphql_schema_parser_js_1.getFieldedTypes)(encodedDirectivesSchemaText, directiveProperties);
-    console.log('types', types.objects.Query_isExtended_.fields.users.parameters);
+    console.log('types', types);
     // // console.log('typessss',types.type.Query_isExtended_.directives.include1.parameters)
     var unions = (0, encoded_graphql_schema_parser_js_1.getUnions)(encodedDirectivesSchemaText, directiveProperties);
     console.log('unions', unions);

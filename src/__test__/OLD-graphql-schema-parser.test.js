@@ -1,5 +1,4 @@
-const fs = require('fs')
-const path = require("path");
+
 import {generateSchemaObject} from '../ts-type-generator';
 const graphqlSchemaText = fs.readFileSync(path.resolve(__dirname, 'fixtures/testschema.graphql'), 'utf8');
 const schemaObject = generateSchemaObject(graphqlSchemaText);
