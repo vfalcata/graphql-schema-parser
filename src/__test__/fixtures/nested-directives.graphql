@@ -21,3 +21,45 @@ extend type Query implements dog & cat  @include1(if:boolean) @exclude1(if:[bool
     post: Post!
 }
 
+extend union SearchResult1 = Photo | Person|asdf
+
+extend union SearchResultb @dir1(if:Boolean @dirIn1, then:String) =
+  | Photo
+  | Person
+
+
+union SearchResultc @dir2 =
+  | Photo
+  | Person
+  | Page
+
+union SearchResult1 @dir3 = Photo | Person
+union SearchResult2 @dir4 = Photo | Person
+
+scalar Time
+extend scalar Url
+extend scalar Time2 @dir5
+scalar DateTime @dir6(if:Boolean, before:String @dirIn6(force:Boolean))
+
+enum Direction {
+  NORTH
+  EAST
+  SOUTH
+  WEST
+}
+
+extend enum Direction @direnum1{
+  NORTH @dirEnum2
+  EAST
+  SOUTH
+  WEST
+  CENTER @default(value: string @insideDefaultEnum)
+}
+
+directive @anotherExample3(arg: String @include) on ARGUMENT_DEFINITION
+
+directive @example on FIELD_DEFINITION | ARGUMENT_DEFINITION
+directive @example2 on
+  | FIELD
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT

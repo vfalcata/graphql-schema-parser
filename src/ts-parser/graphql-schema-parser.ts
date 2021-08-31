@@ -10,8 +10,9 @@ import {
 } from './graphql-directive-parser.js'
 import {readFileSync} from 'fs'
 import {resolve} from 'path';
+import { GraphQLSchema } from '../typedefs/graphql-schema.js';
 
-const generateSchemaObject = () => {
+const generateSchemaObject = ():GraphQLSchema => {
     const file = readFileSync(resolve(__dirname,'./../__test__/fixtures/nested-directives.graphql'), 'utf8');
     const { encodedDirectivesSchemaText, directiveProperties } = parseDirectives(file)
     console.log('encodedDirectivesSchemaText',encodedDirectivesSchemaText)
@@ -20,18 +21,29 @@ const generateSchemaObject = () => {
     console.log('types',types.objects!.Query_isExtended_.fields!.users.parameters)
     // // console.log('typessss',types.type.Query_isExtended_.directives.include1.parameters)
 
-    // const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)
-    // console.log('unions',unions)
+    const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)
+    console.log('unions',unions)
 
-    // const scalars = getScalars(encodedDirectivesSchemaText,directiveProperties)
-    // console.log('scalars',scalars)
+    const scalars = getScalars(encodedDirectivesSchemaText,directiveProperties)
+    console.log('scalars',scalars)
 
-    // const enums = getEnums(encodedDirectivesSchemaText,directiveProperties)
-    // console.log('enums',enums)
+    const enums = getEnums(encodedDirectivesSchemaText,directiveProperties)
+    console.log('enums',enums)
 
 
-    // const directiveDefinitions = getDirectiveDefinitions(encodedDirectivesSchemaText,directiveProperties)
-    // console.log('directiveDefinitions',directiveDefinitions)
+    const directiveDefinitions = getDirectiveDefinitions(encodedDirectivesSchemaText,directiveProperties)
+    console.log('directiveDefinitions',directiveDefinitions)
+    let result = new  GraphQLSchema({name:'test'})
+    result.objects=types.objects
+    result.interfaces=types.interfaces
+    result.inputs=types.inputs
+    result.enums=enums
+    result.directiveDefinitions=directiveDefinitions
+    result.scalars=scalars
+    result.unions=unions
+
+
+    return result
 
 }
 //returns graphql schema object, as per typedef

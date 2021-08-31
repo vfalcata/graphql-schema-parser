@@ -6,7 +6,10 @@ import { getDirectiveProperties, ENCODING_FLAG } from './graphql-directive-parse
 
 const EXTENSION_NAME_SUFFIX = '_isExtended_'
 
+//(\s*"""([^"]+)"""\s*){0,1}
 const FIELD_DESCRIPTION = '\(\\s*"""\(\[^"\]+\)"""\\s*\)\{0,1\}'
+
+//(\s*"([^"]+)"\s*){0,1}
 const PARAMETER_DESCRIPTION = '\(\\s*"\(\[^"\]+\)"\\s*\)\{0,1\}'
 
 //(\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z%]*){0,1}{([^}]+)}
@@ -48,6 +51,7 @@ const FIELD_PARAMETER_REGEXP_GROUPS = {
 }
 
 //(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
+//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
 const UNION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}union\\s+\(\\w+\)\\s*\(\[' + ENCODING_FLAG + '\\sA-Za-z0-9\]*\)\\s*=\\s*\(\\|\{0,1\}\[|\\w\\s' + ENCODING_FLAG + '\]+\\|\\s*\\w+\[' + ENCODING_FLAG + '\\w\\s\]+\)$', 'gm');
 const UNION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
@@ -67,13 +71,29 @@ const SCALAR_REGEXP_GROUPS = {
 }
 
 //(\s*"""([^"]+)"""\s*){0,1}^\s*directive %\s*(\w+)\s*\({0,1}([\[\]%\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)
-const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
+//CORRECT ONE
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*([\w\s|]*)$
+
+// const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
+const DIRECTIVE_DEFINITION_REGEXP=new RegExp(FIELD_DESCRIPTION +'^\[\\t \]*directive\\s+\[\\t \]+\(\[\\w'+ENCODING_FLAG+'\\t \]+\)\[\\t \]+on\[\\t \]*\(\[\\w\\s|\]*\)$','gm')
 const DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
-    NAME: 3,
-    PARAMETERS: 4,
-    DIRECTIVE_LOCATIONS: 5
+    DIRECTIVE: 3,
+    DIRECTIVE_LOCATIONS: 4
 }
+
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
+//3=directives
+//4 contents
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
+const MULTILINE_DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
+const MULTILINE_DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
+    DESCRIPTION: 2,
+    DIRECTIVE: 3,
+    DIRECTIVE_LOCATIONS: 4
+}
+
+
 
 
 //(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}enum\s+(\w+){1}([%\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}
@@ -137,9 +157,11 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
     const directiveDefinitionMatches = [...encodedDirectivesSchemaText.matchAll(DIRECTIVE_DEFINITION_REGEXP)]
     const results: NameIndex<DirectiveDefinition> = {}
     directiveDefinitionMatches.forEach((directiveDefinitionMatch) => {
-        const parameters = getParameterProperties(directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.PARAMETERS].trim(), directiveProperties)
-        const name = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.NAME].trim()
-        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim()
+        const directiveId=directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE].trim()
+        const directive = directiveProperties[directiveId]
+        const name = directive.name
+        const parameters=directive.parameters
+        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]
         const isExtended = false
         let elements: NameIndex<DirectiveDefinitionElement> = {}
         directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE_LOCATIONS]

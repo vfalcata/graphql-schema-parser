@@ -10,13 +10,13 @@ import { ScalarDefinition } from './base-type';
 
 
 class GraphQLSchema extends DirectibleComponent{
-    objects:NameIndex<ObjectDefinition>;
-    scalars:NameIndex<ScalarDefinition>;
-    interfaces:NameIndex<InterfaceDefinition>;
-    unions:NameIndex<UnionDefinition>;
-    enums:NameIndex<EnumDefinition>;
-    inputs:NameIndex<InputDefinition>;
-    directiveDefinitions:NameIndex<DirectiveDefinition>;
+    objects?:NameIndex<ObjectDefinition>;
+    scalars?:NameIndex<ScalarDefinition>;
+    interfaces?:NameIndex<InterfaceDefinition>;
+    unions?:NameIndex<UnionDefinition>;
+    enums?:NameIndex<EnumDefinition>;
+    inputs?:NameIndex<InputDefinition>;
+    directiveDefinitions?:NameIndex<DirectiveDefinition>;
     constructor(graphQLSchemaAttrs:GraphQLSchemaAttrs){
         super(graphQLSchemaAttrs);
         this.objects=new NameIndex<ObjectDefinition>();

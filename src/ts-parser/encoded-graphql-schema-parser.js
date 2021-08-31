@@ -31,7 +31,9 @@ var element_definition_js_1 = require("../typedefs/element-definition.js");
 var fielded_type_js_1 = require("../typedefs/fielded-type.js");
 var graphql_directive_parser_js_1 = require("./graphql-directive-parser.js");
 var EXTENSION_NAME_SUFFIX = '_isExtended_';
+//(\s*"""([^"]+)"""\s*){0,1}
 var FIELD_DESCRIPTION = '\(\\s*"""\(\[^"\]+\)"""\\s*\)\{0,1\}';
+//(\s*"([^"]+)"\s*){0,1}
 var PARAMETER_DESCRIPTION = '\(\\s*"\(\[^"\]+\)"\\s*\)\{0,1\}';
 //(\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z%]*){0,1}{([^}]+)}
 var OBJECT_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\(extend\\s+\)\{0,1\}\(type|interface|input\)\{1\}\\s+\(\\w+\)\{1\}\(\\s+implements\\s+\)\{0,1\}\(\[\\s\\w&\]*\)\(\[\\s0-9a-zA-Z' + graphql_directive_parser_js_1.ENCODING_FLAG + '\]*\)\{0,1\}\{\(\[^\}\]+\)\}', 'gm');
@@ -66,6 +68,7 @@ var FIELD_PARAMETER_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 7
 };
 //(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
+//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
 var UNION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}union\\s+\(\\w+\)\\s*\(\[' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\sA-Za-z0-9\]*\)\\s*=\\s*\(\\|\{0,1\}\[|\\w\\s' + graphql_directive_parser_js_1.ENCODING_FLAG + '\]+\\|\\s*\\w+\[' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\w\\s\]+\)$', 'gm');
 var UNION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
@@ -83,12 +86,24 @@ var SCALAR_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 5
 };
 //(\s*"""([^"]+)"""\s*){0,1}^\s*directive %\s*(\w+)\s*\({0,1}([\[\]%\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)
-var DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm');
+//CORRECT ONE
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*([\w\s|]*)$
+// const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
+var DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\[\\t \]*directive\\s+\[\\t \]+\(\[\\w' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\t \]+\)\[\\t \]+on\[\\t \]*\(\[\\w\\s|\]*\)$', 'gm');
 var DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
-    NAME: 3,
-    PARAMETERS: 4,
-    DIRECTIVE_LOCATIONS: 5
+    DIRECTIVE: 3,
+    DIRECTIVE_LOCATIONS: 4
+};
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
+//3=directives
+//4 contents
+//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
+var MULTILINE_DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm');
+var MULTILINE_DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
+    DESCRIPTION: 2,
+    DIRECTIVE: 3,
+    DIRECTIVE_LOCATIONS: 4
 };
 //(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}enum\s+(\w+){1}([%\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}
 var ENUM_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}enum\\s+\(\\w+\)\{1\}\(\[' + graphql_directive_parser_js_1.ENCODING_FLAG + '\\s\\w,:\\(\\)!\\[\\]\]*\)\{0,1\}\{\(\[^\}\]+)\}', 'gm');
@@ -147,9 +162,11 @@ var getDirectiveDefinitions = function (encodedDirectivesSchemaText, directivePr
     var directiveDefinitionMatches = __spreadArray([], __read(encodedDirectivesSchemaText.matchAll(DIRECTIVE_DEFINITION_REGEXP)), false);
     var results = {};
     directiveDefinitionMatches.forEach(function (directiveDefinitionMatch) {
-        var parameters = getParameterProperties(directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.PARAMETERS].trim(), directiveProperties);
-        var name = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.NAME].trim();
-        var description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim();
+        var directiveId = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE].trim();
+        var directive = directiveProperties[directiveId];
+        var name = directive.name;
+        var parameters = directive.parameters;
+        var description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION];
         var isExtended = false;
         var elements = {};
         directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE_LOCATIONS]
