@@ -87,29 +87,29 @@ interface DescribableParameterComponentAttrs extends ParameterComponentAttrs{
 }
 
 
-class FieldDefinition extends ParameterComponent{
-
+//for input types?
+class InputFieldDefinition extends ParameterComponent{    
     description?:string;
-    constructor(fieldDefinitionAttrs:FieldDefinitionAttrs){
-        super(fieldDefinitionAttrs)
-        this.description=fieldDefinitionAttrs.description
+    constructor(inputFieldDefinitionAttrs:InputFieldDefinitionAttrs){
+        super(inputFieldDefinitionAttrs)
+        this.description=inputFieldDefinitionAttrs.description
     }
 }
 
-interface FieldDefinitionAttrs extends ParameterComponentAttrs{
+interface InputFieldDefinitionAttrs extends ParameterComponentAttrs{
     description?:string;
 }
 
-
-class ParameterizibleFieldDefinition extends FieldDefinition{
+//for object interface types that have field definitionwith parameters
+class ParameterFieldDefinition extends InputFieldDefinition{
     parameters?:NameIndex<DescribableParameterComponent>;
-    constructor(parameterizibleFieldDefinitionAttrs:ParameterizibleFieldDefinitionAttrs){
-        super(parameterizibleFieldDefinitionAttrs)
-        this.parameters=parameterizibleFieldDefinitionAttrs.parameters?parameterizibleFieldDefinitionAttrs.parameters:new NameIndex<DescribableParameterComponent>();       
+    constructor(parameterFieldDefinitionAttrs:ParameterFieldDefinitionAttrs){
+        super(parameterFieldDefinitionAttrs)
+        this.parameters=parameterFieldDefinitionAttrs.parameters??new NameIndex<DescribableParameterComponent>();       
     }
-
 }
-interface ParameterizibleFieldDefinitionAttrs extends FieldDefinition{
+
+interface ParameterFieldDefinitionAttrs extends InputFieldDefinitionAttrs{
     parameters?:NameIndex<DescribableParameterComponent>;
 
 }
@@ -119,11 +119,13 @@ export{
     DirectibleComponentAttrs,
     DirectiveAnnotation,
     DirectiveAnnotationAttrs,
+    DescribableParameterComponent,
     ParameterComponent,
     ParameterComponentAttrs,
-    ParameterizibleFieldDefinition,
-    ParameterizibleFieldDefinitionAttrs,
-    FieldDefinition,
+    ParameterFieldDefinition,
+    ParameterFieldDefinitionAttrs,
+    InputFieldDefinition,
+    InputFieldDefinitionAttrs,
     NameIndex,
     NamedComponent,
     NamedComponentAttrs

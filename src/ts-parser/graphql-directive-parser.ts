@@ -21,6 +21,7 @@ const generateDirectiveId = (height:number):string => {
 
 
 // const DIRECTIVE_WITH_NON_DIRECTIVE_PARAMETER_REGEXP=/@(\w*)\s*\(\s*([\w\s:\[\]!,]+)\)(\s*)/g
+//@(\w*)\s*\(\s*([\w\s:\[\]!,]+)\)(\s*)
 const DIRECTIVE_WITH_NON_DIRECTIVE_PARAMETER_REGEXP=new RegExp('@\(\\w*\)\\s*\\(\\s*\(\[\\w\\s:\\[\\]!,\]+\)\\)\(\\s*\)','g')//g
 
     const DIRECTIVE_WITH_NON_DIRECTIVE_PARAMETER_REGEXP_GROUPS = {
@@ -31,6 +32,7 @@ const DIRECTIVE_WITH_NON_DIRECTIVE_PARAMETER_REGEXP=new RegExp('@\(\\w*\)\\s*\\(
     }
   
 // const DIRECTIVE_WITH_PARAMETER_REGEXP=/@(\w*)\s*\(\s*([\w\s:#\[\]!,]+)\)(\s*)/g
+//@(\w*)\s*\(\s*([\w\s:%\[\]!,]+)\)(\s*)
 const DIRECTIVE_WITH_PARAMETER_REGEXP=new RegExp('@\(\\w*\)\\s*\\(\\s*\(\[\\w\\s:'+ENCODING_FLAG+'\\[\\]!,\]+\)\\)\(\\s*\)','g');
 const DIRECTIVE_WITH_PARAMETER_REGEXP_GROUPS = {
     FULL_MATCH: 0,
@@ -39,7 +41,7 @@ const DIRECTIVE_WITH_PARAMETER_REGEXP_GROUPS = {
     TAIL:3
 }
 
-    
+//%+[0-9A-Za-z]%+
 const ENCODED_DIRECTIVE_REGEXP = new RegExp(ENCODING_FLAG+'+\[0-9A-Za-z\]+'+ENCODING_FLAG+'+','gm')
 const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
     FULL_MATCH: 0,
@@ -50,11 +52,11 @@ const ENCODED_DIRECTIVE_REGEXP_GROUPS = {
 const getDirectiveProperties = (encodedDirectiveComponent:string, directivesProperties:NameIndex<DirectiveAnnotation>):NameIndex<DirectiveAnnotation> => {
     let result = new NameIndex<DirectiveAnnotation>();
     if(!encodedDirectiveComponent || encodedDirectiveComponent.length<1 || !encodedDirectiveComponent.includes(ENCODING_FLAG)){
-        return;
+        return result;
     }
     const encodedDirectiveMatches = [...encodedDirectiveComponent.matchAll(ENCODED_DIRECTIVE_REGEXP)].map(match => match[ENCODED_DIRECTIVE_REGEXP_GROUPS.FULL_MATCH])
     encodedDirectiveMatches.forEach((directiveId) => {
-        const directiveName = directivesProperties.nameIndex[directiveId].name
+        const directiveName = directivesProperties[directiveId].name
         result[directiveName] = directivesProperties[directiveId]
     })
     return result
@@ -124,7 +126,7 @@ const getDirectiveParameters = (rawParametersFieldText:string, directivesPropert
             }
             let directive = directivesProperties[parameterDirectiveId]
             directiveParameters[parameterName].type =parameterType.replace(parameterDirectiveId, '').trim()
-            directiveParameters[parameterName].directives[directive.name]=directive
+            directiveParameters[parameterName].directives![directive.name]=directive
             delete directivesProperties[parameterDirectiveId]
         })
     })

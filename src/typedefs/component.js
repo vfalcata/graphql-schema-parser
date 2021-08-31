@@ -1,4 +1,5 @@
 "use strict";
+//Compent level type definitions that are used to compose objects
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15,35 +16,45 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 exports.__esModule = true;
-exports.ParameterComponent = exports.DirectiveAnnotation = exports.DirectibleComponent = void 0;
-//Compent level type definitions that are used to compose objects
-var indexable_1 = require("./indexable");
-var Component = /** @class */ (function () {
-    function Component(ComponentAttrs) {
+exports.NamedComponent = exports.NameIndex = exports.InputFieldDefinition = exports.ParameterFieldDefinition = exports.ParameterComponent = exports.DescribableParameterComponent = exports.DirectiveAnnotation = exports.DirectibleComponent = void 0;
+var TypeIndex = /** @class */ (function () {
+    function TypeIndex() {
+    }
+    return TypeIndex;
+}());
+var NameIndex = /** @class */ (function () {
+    function NameIndex() {
+    }
+    return NameIndex;
+}());
+exports.NameIndex = NameIndex;
+var NamedComponent = /** @class */ (function () {
+    function NamedComponent(ComponentAttrs) {
         this.name = ComponentAttrs.name;
     }
-    return Component;
+    return NamedComponent;
 }());
+exports.NamedComponent = NamedComponent;
 var DirectibleComponent = /** @class */ (function (_super) {
     __extends(DirectibleComponent, _super);
     function DirectibleComponent(directibleComponentAttrs) {
         var _this = _super.call(this, directibleComponentAttrs) || this;
-        _this.directives = directibleComponentAttrs.directives ? directibleComponentAttrs.directives : new indexable_1.ModifiableNameIndex({ name: 'directives' });
+        _this.directives = directibleComponentAttrs.directives ? directibleComponentAttrs.directives : new NameIndex();
         return _this;
     }
     return DirectibleComponent;
-}(Component));
+}(NamedComponent));
 exports.DirectibleComponent = DirectibleComponent;
 var DirectiveAnnotation = /** @class */ (function (_super) {
     __extends(DirectiveAnnotation, _super);
     function DirectiveAnnotation(directiveAnnotationAttrs) {
         var _this = _super.call(this, directiveAnnotationAttrs) || this;
-        _this.parameters = directiveAnnotationAttrs.parameters ? directiveAnnotationAttrs.parameters : new indexable_1.ModifiableNameIndex({ name: 'parameters' });
+        _this.parameters = directiveAnnotationAttrs.parameters ? directiveAnnotationAttrs.parameters : new NameIndex();
         _this.height = directiveAnnotationAttrs.height ? directiveAnnotationAttrs.height : 1;
         return _this;
     }
     return DirectiveAnnotation;
-}(Component));
+}(NamedComponent));
 exports.DirectiveAnnotation = DirectiveAnnotation;
 var ParameterComponent = /** @class */ (function (_super) {
     __extends(ParameterComponent, _super);
@@ -55,3 +66,36 @@ var ParameterComponent = /** @class */ (function (_super) {
     return ParameterComponent;
 }(DirectibleComponent));
 exports.ParameterComponent = ParameterComponent;
+var DescribableParameterComponent = /** @class */ (function (_super) {
+    __extends(DescribableParameterComponent, _super);
+    function DescribableParameterComponent(describableParameterComponentAttrs) {
+        var _this = _super.call(this, describableParameterComponentAttrs) || this;
+        _this.description = describableParameterComponentAttrs.description;
+        return _this;
+    }
+    return DescribableParameterComponent;
+}(ParameterComponent));
+exports.DescribableParameterComponent = DescribableParameterComponent;
+//for input types?
+var InputFieldDefinition = /** @class */ (function (_super) {
+    __extends(InputFieldDefinition, _super);
+    function InputFieldDefinition(inputFieldDefinitionAttrs) {
+        var _this = _super.call(this, inputFieldDefinitionAttrs) || this;
+        _this.description = inputFieldDefinitionAttrs.description;
+        return _this;
+    }
+    return InputFieldDefinition;
+}(ParameterComponent));
+exports.InputFieldDefinition = InputFieldDefinition;
+//for object interface types that have field definitionwith parameters
+var ParameterFieldDefinition = /** @class */ (function (_super) {
+    __extends(ParameterFieldDefinition, _super);
+    function ParameterFieldDefinition(parameterFieldDefinitionAttrs) {
+        var _a;
+        var _this = _super.call(this, parameterFieldDefinitionAttrs) || this;
+        _this.parameters = (_a = parameterFieldDefinitionAttrs.parameters) !== null && _a !== void 0 ? _a : new NameIndex();
+        return _this;
+    }
+    return ParameterFieldDefinition;
+}(InputFieldDefinition));
+exports.ParameterFieldDefinition = ParameterFieldDefinition;

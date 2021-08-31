@@ -1,4 +1,4 @@
-import { DirectiveAnnotation, NamedComponent } from "./component"
+import { DirectiveAnnotation, NamedComponent,NameIndex } from "./component"
 
 abstract class SchemaTypeDefinition extends NamedComponent{
     description?:string
@@ -7,7 +7,7 @@ abstract class SchemaTypeDefinition extends NamedComponent{
     constructor(schemaTypeDefinitionAttrs:SchemaTypeDefinitionAttrs){
         super(schemaTypeDefinitionAttrs)
         this.description=schemaTypeDefinitionAttrs.name;
-        this.isExtended=schemaTypeDefinitionAttrs.isExtended
+        this.isExtended=schemaTypeDefinitionAttrs.isExtended?true:false
     }
 }
 interface SchemaTypeDefinitionAttrs{
@@ -30,15 +30,13 @@ interface DirectibleSchemaTypeDefinitionAttrs extends SchemaTypeDefinitionAttrs{
 
 //scalars arent fielded nor elemental 
 class ScalarDefinition extends DirectibleSchemaTypeDefinition{
-    type:string;
     constructor(scalarTypeAttrs:ScalarTypeAttrs){
         super(scalarTypeAttrs);
-        this.type=scalarTypeAttrs.type;
     }
 }
 
 interface ScalarTypeAttrs extends SchemaTypeDefinitionAttrs{
-    type:string;
+
 }
 
 

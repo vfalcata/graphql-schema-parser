@@ -1,0 +1,23 @@
+extend type Query implements dog & cat  @include1(if:boolean) @exclude1(if:[boolean!]!) {
+    """
+    gets the users
+    """
+    users(
+        "string to specify user"
+        query: String
+        ): [User!]! @include2(if:boolean @require1)
+    """
+    gets the posts 
+    """
+    posts(available: Boolean @include3(if:boolean @authenticate1(email:String, password:String @exclude2(if:[boolean!]!)), from5:String @now1 @then1), query: String @authenticate2(email:String, password:String)): [Post!]! @include4(if:boolean)
+    """
+    gets the comments
+    """
+    comments: [Comment!]! @authenticate3(email:String @require2, password:String @require3) @include5(if:boolean)
+    """
+    gets the current user
+    """
+    me: User! @last1 @second1 @third(amount:Int, time:Int @max(amount:int) @min1)
+    post: Post!
+}
+

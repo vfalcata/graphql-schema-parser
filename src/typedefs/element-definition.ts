@@ -74,7 +74,7 @@ class UnionDefinition extends DirectibleElementCollection<UnionElement>{
 }
 
 class DirectiveDefinition extends ElementCollection<DirectiveDefinitionElement>{
-    parameters:NameIndex<ParameterComponent>;
+    parameters?:NameIndex<ParameterComponent>;
     constructor(directiveDefinitionAttrs:DirectiveDefinitionAttrs){
         super(directiveDefinitionAttrs);
         this.parameters=directiveDefinitionAttrs.parameters;
@@ -86,9 +86,13 @@ interface DirectiveDefinitionAttrs extends ElementCollectionAttrs<DirectiveDefin
 }
 
 class DirectiveDefinitionElement extends Element{
-    name:ExecutableDirectiveLocationsEnum|TypeSystemDirectiveLocationsEnum
+    constructor(elementAttrs:ElementAttrs){
+        super(elementAttrs)
+        if(!(elementAttrs.name in ExecutableDirectiveLocationsEnum) && !(elementAttrs.name in TypeSystemDirectiveLocationsEnum)){
+            throw new Error(`The element name \'${elementAttrs.name}\' cannot be added a since it is not listed in enums, ExecutableDirectiveLocationsEnum or TypeSystemDirectiveLocationsEnum`)
+        }
+    }
 }
-
 
 enum ExecutableDirectiveLocationsEnum{
     QUERY='QUERY',
@@ -99,6 +103,15 @@ enum ExecutableDirectiveLocationsEnum{
     FRAGMENT_SPREAD='FRAGMENT_SPREAD',
     INLINE_FRAGMENT='INLINE_FRAGMENT'
 }
+// enum ExecutableDirectiveLocationsEnum{
+//     QUERY,
+//     MUTATION,
+//     SUBSCRIPTION,
+//     FIELD,
+//     FRAGMENT_DEFINITION,
+//     FRAGMENT_SPREAD,
+//     INLINE_FRAGMENT
+// }
 enum TypeSystemDirectiveLocationsEnum{
     SCHEMA='SCHEMA',
     SCALAR='SCALAR',
