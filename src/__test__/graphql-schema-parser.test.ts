@@ -15,7 +15,7 @@ const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any
 
     let {stringProperties:expectedStringProperties,  objectProperties:expected}=splitStringProperties(expectedSchemaObject)
     let {stringProperties:actualStringProperties,  objectProperties:actual}=splitStringProperties(actualSchemaObject)
-    let result = true;
+    let isEqual=true
     // console.log('actuall', actual)
     // console.log('expectedd', expected)
     // console.log('expectedStringPropertiess', expectedStringProperties)
@@ -61,14 +61,14 @@ const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any
         let result = compareSchemaObjects(expected[property], actual[property])
         // console.log('expected subbb',expected[property])
         // console.log('actual subbb',actual[property])
-        if(!result.isEqual){
+        isEqual=isEqual&&result.isEqual
+        if(!isEqual){
             return {isEqual:false,reason:`child properties of key ${property} do not match`,expected:expected[property],actual:actual[property]};
-        }else{
-            return {isEqual:true,reason:"objects match",expected:{},actual:{}};
         }
     }
-    return {isEqual:false,reason:"objects dont match",expected:{},actual:{}};
+    return {isEqual,reason:"objects match, success",expected:{},actual:{}};
 }
+// postcondition: returns if actual and expected object match in their defined properties
 
 const getKeys=(obj:any):string[]=>{
     let result=[]
