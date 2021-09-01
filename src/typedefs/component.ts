@@ -24,8 +24,8 @@ interface Parameterizible {
 
 class NamedComponent {
     name:string;
-    constructor(ComponentAttrs){
-        this.name=ComponentAttrs.name;
+    constructor(namedComponentAttrs:NamedComponentAttrs){
+        this.name=namedComponentAttrs.name;
     }
 }
 
@@ -57,6 +57,7 @@ class DirectiveAnnotation extends NamedComponent{
         this.height=directiveAnnotationAttrs.height?directiveAnnotationAttrs.height:1;        
     }
 }
+
 interface DirectiveAnnotationAttrs extends DirectibleComponentAttrs{
     parameters?:NameIndex<ParameterComponent>;
     height?: number;
@@ -94,6 +95,7 @@ class InputFieldDefinition extends ParameterComponent{
         super(inputFieldDefinitionAttrs)
         this.description=inputFieldDefinitionAttrs.description
     }
+    
 }
 
 interface InputFieldDefinitionAttrs extends ParameterComponentAttrs{

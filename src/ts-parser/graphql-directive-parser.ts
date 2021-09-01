@@ -79,8 +79,9 @@ const parseDirectives = (rawGraphQLSchemaText:string):{encodedDirectivesSchemaTe
             curretRegExp=DIRECTIVE_WITH_PARAMETER_REGEXP
         }
         encodedDirectivesSchemaText=encodedDirectivesSchemaText.replace(curretRegExp,(match,p1,p2,p3)=>{
-            const directiveId = generateDirectiveId(height)
+            const directiveId = generateDirectiveId(height)            
             let name=p1
+            directiveProperties[directiveId]={name};
             let tailGroup=p2
             let parameters;
             if(height>0){
@@ -88,13 +89,15 @@ const parseDirectives = (rawGraphQLSchemaText:string):{encodedDirectivesSchemaTe
                 parameters=getDirectiveParameters(p2,directiveProperties)      
             }
 
-
-            directiveProperties[directiveId]={
-                name,
-                height,
-                parameters
+            if(parameters){
+                directiveProperties[directiveId].parameters=parameters
             }
-
+            if(name){
+                directiveProperties[directiveId].name=name
+            }
+            if(height){
+                directiveProperties[directiveId].height=height
+            }
             return ` ${directiveId}${tailGroup}`;
         })
         height++;
@@ -126,7 +129,9 @@ const getDirectiveParameters = (rawParametersFieldText:string, directivesPropert
             }
             let directive = directivesProperties[parameterDirectiveId]
             directiveParameters[parameterName].type =parameterType.replace(parameterDirectiveId, '').trim()
-            directiveParameters[parameterName].directives![directive.name]=directive
+            if(directive){
+                directiveParameters[parameterName].directives![directive.name]=directive
+            }
             delete directivesProperties[parameterDirectiveId]
         })
     })

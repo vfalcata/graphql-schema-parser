@@ -28,6 +28,30 @@ class GraphQLSchema extends DirectibleComponent{
         this.directiveDefinitions=new NameIndex<DirectiveDefinition>();
     }
 
+    getSchemaObject():GraphQLSchemaObject{
+        return{
+            name:this.name,
+            objects:this.objects,
+            scalars:this.scalars,
+            interfaces:this.interfaces,
+            unions:this.unions,
+            enums:this.enums,
+            inputs:this.inputs,
+            directiveDefinitions:this.directiveDefinitions
+        }
+    }
+
+}
+
+interface GraphQLSchemaObject{
+    name:string,
+    objects?:NameIndex<ObjectDefinition>;
+    scalars?:NameIndex<ScalarDefinition>;
+    interfaces?:NameIndex<InterfaceDefinition>;
+    unions?:NameIndex<UnionDefinition>;
+    enums?:NameIndex<EnumDefinition>;
+    inputs?:NameIndex<InputDefinition>;
+    directiveDefinitions?:NameIndex<DirectiveDefinition>;
 }
 
 interface GraphQLSchemaAttrs extends DirectibleComponentAttrs {
@@ -48,4 +72,5 @@ enum GraphQLType {
 
 export {
     GraphQLSchema,
+    GraphQLSchemaObject
 }

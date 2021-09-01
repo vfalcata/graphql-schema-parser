@@ -4,12 +4,15 @@
   "description": "INSERT",
   "main": "INSERT.js",
   "scripts": {
-    "test": "INSERT.js",
+    "test": "jest",
     "exec": "tsc --downlevelIteration src/ts-parser/graphql-schema-parser.ts && node src/ts-parser/graphql-schema-parser.js"
   },
   "repository": {
     "type": "git",
     "url": "INSERT"
+  },
+  "jest": {
+    "preset": "ts-jest"
   },
   "keywords": [
     "INSERT"
@@ -17,8 +20,11 @@
   "author": "INSERT",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^27.0.1",
     "@types/node": "^16.7.8",
     "jest": "^27.1.0",
+    "ts-jest": "^27.0.5",
     "typescript": "^4.4.2"
-  }
+  },
+  "dependencies": {}
 }

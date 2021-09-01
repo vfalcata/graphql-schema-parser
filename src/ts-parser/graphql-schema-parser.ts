@@ -4,36 +4,31 @@ import {
     getDirectiveDefinitions,
     getScalars,
     getUnions,
-} from './encoded-graphql-schema-parser.js'
+} from './encoded-graphql-schema-parser'
 import {
     parseDirectives
-} from './graphql-directive-parser.js'
+} from './graphql-directive-parser'
 import {readFileSync} from 'fs'
 import {resolve} from 'path';
-import { GraphQLSchema } from '../typedefs/graphql-schema.js';
+import { GraphQLSchema,GraphQLSchemaObject } from '../typedefs/graphql-schema';
 
-const generateSchemaObject = ():GraphQLSchema => {
-    const file = readFileSync(resolve(__dirname,'./../__test__/fixtures/nested-directives.graphql'), 'utf8');
-    const { encodedDirectivesSchemaText, directiveProperties } = parseDirectives(file)
-    console.log('encodedDirectivesSchemaText',encodedDirectivesSchemaText)
-    console.log('directiveProperties',directiveProperties)
+const generateSchemaObject = (rawGraphqlSchemaText:string,name:string):GraphQLSchemaObject => {
+    const { encodedDirectivesSchemaText, directiveProperties } = parseDirectives(rawGraphqlSchemaText)
     const types = getFieldedTypes(encodedDirectivesSchemaText,directiveProperties)
-    console.log('types',types)
-    // // console.log('typessss',types.type.Query_isExtended_.directives.include1.parameters)
-
     const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)
-    console.log('unions',unions)
-
     const scalars = getScalars(encodedDirectivesSchemaText,directiveProperties)
-    console.log('scalars',scalars)
-
     const enums = getEnums(encodedDirectivesSchemaText,directiveProperties)
-    console.log('enums',enums)
-
-
     const directiveDefinitions = getDirectiveDefinitions(encodedDirectivesSchemaText,directiveProperties)
-    console.log('directiveDefinitions',directiveDefinitions)
-    let result = new  GraphQLSchema({name:'test'})
+
+    // console.log('encodedDirectivesSchemaText',encodedDirectivesSchemaText)
+    // console.log('directiveProperties',directiveProperties)
+    // console.log('types',types)
+    // console.log('unions',unions)
+    // console.log('scalars',scalars)
+    // console.log('enums',enums)
+    // console.log('directiveDefinitions',directiveDefinitions)
+
+    let result = new  GraphQLSchema({name})
     result.objects=types.objects
     result.interfaces=types.interfaces
     result.inputs=types.inputs
@@ -41,11 +36,10 @@ const generateSchemaObject = ():GraphQLSchema => {
     result.directiveDefinitions=directiveDefinitions
     result.scalars=scalars
     result.unions=unions
-
-
-    return result
-
+    return result.getSchemaObject();
 }
 //returns graphql schema object, as per typedef
 
-generateSchemaObject();
+export {
+    generateSchemaObject
+}

@@ -1,8 +1,8 @@
-import { ScalarDefinition } from '../typedefs/base-type.js'
-import { DescribableParameterComponent, DirectiveAnnotation, InputFieldDefinition, NamedComponent, NameIndex, ParameterFieldDefinition } from '../typedefs/component.js'
-import { DirectiveDefinition, DirectiveDefinitionElement, EnumDefinition, EnumElement, ExecutableDirectiveLocationsEnum, TypeSystemDirectiveLocationsEnum, UnionDefinition, UnionElement } from '../typedefs/element-definition.js'
-import { InputDefinition, InterfaceDefinition, ObjectDefinition } from '../typedefs/fielded-type.js'
-import { getDirectiveProperties, ENCODING_FLAG } from './graphql-directive-parser.js'
+import { ScalarDefinition } from '../typedefs/base-type'
+import { DescribableParameterComponent, DirectiveAnnotation, InputFieldDefinition, NamedComponent, NameIndex, ParameterFieldDefinition } from '../typedefs/component'
+import { DirectiveDefinition, DirectiveDefinitionElement, EnumDefinition, EnumElement, ExecutableDirectiveLocationsEnum, TypeSystemDirectiveLocationsEnum, UnionDefinition, UnionElement } from '../typedefs/element-definition'
+import { InputDefinition, InterfaceDefinition, ObjectDefinition } from '../typedefs/fielded-type'
+import { getDirectiveProperties, ENCODING_FLAG } from './graphql-directive-parser'
 
 const EXTENSION_NAME_SUFFIX = '_isExtended_'
 
@@ -42,7 +42,7 @@ const FIELD_REGEXP_GROUPS = {
 //(\w+)[\t ]*:[\t ]*(\w+)[\t ]*([\w%]+)
 // const FIELD_PARAMETER_REGEXP=new RegExp('\(\\w+\)\[\\t \]*:\[\\t \]*\(\\w+\)\[\\t \]*\(\[\\w%\]+\)','gm')
 // (\s*"([^"]+)"\s*){0,1}[\t ]*(\w+)[\t ]*(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$|[%\w \t]+,)
-const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION+'\[\\t \]*\(\\w+\)\[\\t \]*\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$|\[' + ENCODING_FLAG + '\\w \\t\]+,\)', 'gm')
+const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '\[\\t \]*\(\\w+\)\[\\t \]*\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$|\[' + ENCODING_FLAG + '\\w \\t\]+,\)', 'gm')
 const FIELD_PARAMETER_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     NAME: 3,
@@ -75,7 +75,7 @@ const SCALAR_REGEXP_GROUPS = {
 //(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*([\w\s|]*)$
 
 // const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
-const DIRECTIVE_DEFINITION_REGEXP=new RegExp(FIELD_DESCRIPTION +'^\[\\t \]*directive\\s+\[\\t \]+\(\[\\w'+ENCODING_FLAG+'\\t \]+\)\[\\t \]+on\[\\t \]*\(\[\\w\\s|\]*\)$','gm')
+const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\[\\t \]*directive\\s+\[\\t \]+\(\[\\w' + ENCODING_FLAG + '\\t \]+\)\[\\t \]+on\[\\t \]*\(\[\\w\\s|\]*\)$', 'gm')
 const DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     DIRECTIVE: 3,
@@ -120,13 +120,13 @@ const getUnions = (encodedDirectivesSchemaText: string, directiveProperties: Nam
         const directives = getDirectiveProperties(unionMatch[UNION_REGEXP_GROUPS.ENCODED_DIRECTIVES].trim(), directiveProperties)
         const isExtended = unionMatch[UNION_REGEXP_GROUPS.EXTENDS_TAG] ? true : false
         const name = isExtended ? unionMatch[UNION_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : unionMatch[UNION_REGEXP_GROUPS.NAME]
-        const description = unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION]?unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION].trim():unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION]
-        results[name] = {
-            isExtended,
-            name,
-            elements,
-            directives,
-            description
+        const description = unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION] ? unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION].trim() : unionMatch[UNION_REGEXP_GROUPS.DESCRIPTION]
+        results[name] = { isExtended, name, elements }
+        if (directives) {
+            results[name].directives = directives
+        }
+        if (description) {
+            results[name].description = description
         }
     })
     return results;
@@ -139,14 +139,15 @@ const getScalars = (encodedDirectivesSchemaText: string, directiveProperties: Na
     const results: NameIndex<ScalarDefinition> = {}
     scalarMatches.forEach((scalarMatch) => {
         const directives = getDirectiveProperties(scalarMatch[SCALAR_REGEXP_GROUPS.ENCODED_DIRECTIVES].trim(), directiveProperties)
-        const description = scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION]?scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION].trim():scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION]
+        const description = scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION] ? scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION].trim() : scalarMatch[SCALAR_REGEXP_GROUPS.DESCRIPTION]
         const isExtended = scalarMatch[SCALAR_REGEXP_GROUPS.EXTENDS_TAG] ? true : false
         const name = isExtended ? scalarMatch[SCALAR_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : scalarMatch[SCALAR_REGEXP_GROUPS.NAME]
-        results[name] = {
-            isExtended,
-            name,
-            directives,
-            description
+        results[name] = { name, isExtended }
+        if (directives) {
+            results[name].directives = directives
+        }
+        if (description) {
+            results[name].description = description
         }
     })
     return results;
@@ -157,11 +158,11 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
     const directiveDefinitionMatches = [...encodedDirectivesSchemaText.matchAll(DIRECTIVE_DEFINITION_REGEXP)]
     const results: NameIndex<DirectiveDefinition> = {}
     directiveDefinitionMatches.forEach((directiveDefinitionMatch) => {
-        const directiveId=directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE].trim()
+        const directiveId = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE].trim()
         const directive = directiveProperties[directiveId]
         const name = directive.name
-        const parameters=directive.parameters
-        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]?directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim():directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]
+        const parameters = directive.parameters
+        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION] ? directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim() : directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]
         const isExtended = false
         let elements: NameIndex<DirectiveDefinitionElement> = {}
         directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE_LOCATIONS]
@@ -175,13 +176,14 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
                     console.log(e)
                 }
             })
-        results[name] = {
-            parameters,
-            name,
-            elements,
-            description,
-            isExtended
+        results[name]={name, elements, isExtended}
+        if (description) {
+            results[name].description = description
         }
+        if (parameters) {
+            results[name].parameters = parameters
+        }
+
     })
     return results;
 }
@@ -213,7 +215,7 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
         const name = isExtended ? match[OBJECT_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : match[OBJECT_REGEXP_GROUPS.NAME]
         const interfaces = match[OBJECT_REGEXP_GROUPS.IMPLEMENTS]
         const rawTextFields = match[OBJECT_REGEXP_GROUPS.BODY]
-        const description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION]?match[OBJECT_REGEXP_GROUPS.DESCRIPTION].trim():match[OBJECT_REGEXP_GROUPS.DESCRIPTION]
+        const description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION] ? match[OBJECT_REGEXP_GROUPS.DESCRIPTION].trim() : match[OBJECT_REGEXP_GROUPS.DESCRIPTION]
 
 
 
@@ -234,9 +236,16 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
                         .filter(anInterface => anInterface.length > 0)
                         .map(anInterface => new NamedComponent({ name: anInterface }))
                         .forEach(interfaceComponent => implementations[interfaceComponent.name] = interfaceComponent)
-                    object.implements = implementations
+                    if (Object.keys(implementations).length > 0) {
+                        object.implements = implementations
+                    }
+
                 }
-                object.fields = getParameterFieldProperties(rawTextFields, directiveProperties)
+                let fields = getParameterFieldProperties(rawTextFields, directiveProperties)
+                if (Object.keys(fields).length > 0) {
+                    object.fields = fields
+                }
+
                 result = object
             }
 
@@ -248,12 +257,12 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
                 result.directives = getDirectiveProperties(encodedDirectives, directiveProperties)
             }
 
-            if(result instanceof ObjectDefinition){
-                objectsResult[result.name]=result
-            }else if(result instanceof InterfaceDefinition){
-                interfacesResult[result.name]=result
-            }else if(result instanceof InputDefinition){
-                inputsResult[result.name]=result
+            if (result instanceof ObjectDefinition) {
+                objectsResult[result.name] = result
+            } else if (result instanceof InterfaceDefinition) {
+                interfacesResult[result.name] = result
+            } else if (result instanceof InputDefinition) {
+                inputsResult[result.name] = result
             }
         }
     })
@@ -274,18 +283,18 @@ const getParameterProperties = (rawParametersText: string, directiveProperties: 
     let results: NameIndex<DescribableParameterComponent> = {}
     matches
         .forEach((match) => {
-            
+
             const name = match[FIELD_PARAMETER_REGEXP_GROUPS.NAME]
             const type = match[FIELD_PARAMETER_REGEXP_GROUPS.TYPE]
             const directives = match[FIELD_PARAMETER_REGEXP_GROUPS.ENCODED_DIRECTIVES]
             const description = match[FIELD_PARAMETER_REGEXP_GROUPS.DESCRIPTION]
             if (name && type) {
                 results[name] = new DescribableParameterComponent({ name, type })
-                if(description){
-                    results[name].description=description.trim()
+                if (description) {
+                    results[name].description = description.trim()
                 }
-                if(directives){
-                    results[name].directives=getDirectiveProperties(directives, directiveProperties)
+                if (directives) {
+                    results[name].directives = getDirectiveProperties(directives, directiveProperties)
                 }
             }
         })
@@ -305,15 +314,14 @@ const getParameterFieldProperties = (rawTextFields: string, directiveProperties:
             const description = match[FIELD_REGEXP_GROUPS.DESCRIPTION]
             if (name && type) {
                 results[name] = new ParameterFieldDefinition({ name, type })
-                if(description){
-                    results[name].description=description.trim()
+                if (description && description.length > 0) {
+                    results[name].description = description.trim()
                 }
-                if(directives){
-                    results[name].directives=getDirectiveProperties(directives, directiveProperties)
+                if (directives && directives.length > 0) {
+                    results[name].directives = getDirectiveProperties(directives, directiveProperties)
                 }
-                if(parameters){
-                    results[name].parameters=getParameterProperties(parameters, directiveProperties)
-                    console.log('parametersparametersparameters',parameters)
+                if (parameters && parameters.length > 0) {
+                    results[name].parameters = getParameterProperties(parameters, directiveProperties)
                 }
 
             }
@@ -333,15 +341,14 @@ const getInputFieldProperties = (rawTextFields: string, directiveProperties: Nam
             const directives = match[FIELD_REGEXP_GROUPS.ENCODED_DIRECTIVES]
             const description = match[FIELD_REGEXP_GROUPS.DESCRIPTION]
             if (name && type) {
-                results[name] = new InputFieldDefinition({ name, type })
-                if(description){
-                    results[name].description=description.trim();
+                results[name] = { name, type }
+                if (description && description.length > 0) {
+                    results[name].description = description.trim();
                 }
-                if(directives){
-                    results[name].directives=getDirectiveProperties(directives, directiveProperties)
+                if (directives && directives.length > 0) {
+                    results[name].directives = getDirectiveProperties(directives, directiveProperties)
                 }
             }
-
         })
     return results
 }
@@ -357,20 +364,20 @@ const getEnums = (encodedDirectivesSchemaText: string, directiveProperties: Name
     const enumMatches = [...encodedDirectivesSchemaText.matchAll(ENUM_REGEXP)]
     enumMatches.forEach(typeMatch => delete typeMatch.input)
     enumMatches.forEach((match) => {
-
         const isExtended = match[ENUM_REGEXP_GROUPS.EXTENDS_TAG] ? true : false
         const name = isExtended ? match[ENUM_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : match[ENUM_REGEXP_GROUPS.NAME]
-        const directives = getDirectiveProperties(match[ENUM_REGEXP_GROUPS.ENCODED_DIRECTIVES], directiveProperties)
+        const directives = match[ENUM_REGEXP_GROUPS.ENCODED_DIRECTIVES]
         const elements = getEnumElements(match[ENUM_REGEXP_GROUPS.ELEMENTS], directiveProperties)
-        const description = match[ENUM_REGEXP_GROUPS.DESCRIPTION]?match[ENUM_REGEXP_GROUPS.DESCRIPTION].trim():match[ENUM_REGEXP_GROUPS.DESCRIPTION]
-        results[name] = {
-            name,
-            isExtended,
-            directives,
-            elements,
-            description
+        const description = match[ENUM_REGEXP_GROUPS.DESCRIPTION] ? match[ENUM_REGEXP_GROUPS.DESCRIPTION].trim() : match[ENUM_REGEXP_GROUPS.DESCRIPTION]
+        if (name && Object.keys(elements).length > 0) {
+            results[name] = { name, elements, isExtended }
+            if (description && description.length > 0) {
+                results[name].description = description.trim();
+            }
+            if (directives && directives.length > 0) {
+                results[name].directives = getDirectiveProperties(directives, directiveProperties)
+            }
         }
-
     })
     return results;
 }
@@ -383,11 +390,14 @@ const getEnumElements = (rawEnumValuesText: string, directiveProperties: NameInd
         .map(line => line.trim())
         .forEach((line) => {
             const name = line.includes(ENCODING_FLAG) ? (line.split(ENCODING_FLAG))[0].trim() : line.trim()
-            const directives = getDirectiveProperties(line, directiveProperties)
-            results[name] = {
-                name,
-                directives
+            results[name] = { name }
+            if (line.includes(ENCODING_FLAG)) {
+                const directives = getDirectiveProperties(line, directiveProperties)
+                if (Object.keys(directives).length > 0) {
+                    results[name].directives = directives
+                }
             }
+
         })
     return results
 }

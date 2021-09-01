@@ -1,8 +1,10 @@
 const expectedSchemaObject = {
+    name:'test-schema',
     objects:
     {
         Query_isExtended_: {
             description:"Make a Query",
+            name:"Query_isExtended_",
             implements: {
                 dog: {
                     name: "dog"
@@ -262,6 +264,7 @@ const expectedSchemaObject = {
         },
         Mutation:{
             name:"Mutation",
+            isExtended:false,
             fields:{
                 createUser:{
                     name:"createUser",
@@ -327,6 +330,7 @@ const expectedSchemaObject = {
             }
         },
         Subscription:{
+            isExtended:false,
             name:"Subscription",
             description:"Make a Subscription",
             fields:{
@@ -349,6 +353,7 @@ const expectedSchemaObject = {
     },
     inputs:{
         CreateUserInput:{
+            isExtended:false,
             description:"Input for user creation",
             name:"CreateUserInput",
             fields:{
@@ -368,22 +373,26 @@ const expectedSchemaObject = {
         }
     },
     interfaces:{
-        name:"UpdateUser",
-        description:"interface for user update",
-        fields:{
-            name:{
-                name:"name",
-                type:"String"
-            },
-            email:{
-                name:"email",
-                type:"String"
-            },
-            age:{
-                name:"age",
-                type:"Int"
+        UpdateUser:{
+            isExtended:false,
+            name:"UpdateUser",
+            description:"interface for user update",
+            fields:{
+                name:{
+                    name:"name",
+                    type:"String"
+                },
+                email:{
+                    name:"email",
+                    type:"String"
+                },
+                age:{
+                    name:"age",
+                    type:"Int"
+                }
             }
         }
+
     },
     unions:{
         SearchResult1_isExtended_:{
@@ -404,6 +413,7 @@ const expectedSchemaObject = {
         },
         SearchResult2_isExtended_:{
             name:"SearchResult2_isExtended_",
+            isExtended:true,
             directives:{
                 dir1:{
                     name:"dir1",
@@ -436,6 +446,7 @@ const expectedSchemaObject = {
             }
         },
         SearchResult3:{
+            isExtended:false,
             name:"SearchResult3",
             directives:{
                 dir2:{
@@ -456,6 +467,7 @@ const expectedSchemaObject = {
             }
         },
         SearchResult4:{
+            isExtended:false,
             name:"SearchResult4",
             directives:{
                 dir3:{
@@ -473,6 +485,7 @@ const expectedSchemaObject = {
             }
         },
         SearchResult5:{
+            isExtended:false,
             name:"SearchResult5",
             directives:{
                 dir4:{
@@ -492,6 +505,7 @@ const expectedSchemaObject = {
     },
     scalars:{
         Time:{
+            isExtended:false,
             name:"Time",
             description:"Time for scalar time"
         },
@@ -512,6 +526,7 @@ const expectedSchemaObject = {
 
         },
         DateTime:{
+            isExtended:false,
             name:"DateTime",
             directives:{
                 dir6:{
@@ -546,6 +561,7 @@ const expectedSchemaObject = {
     },
     enums:{
         Direction:{
+            isExtended:false,
             name:"Direction",
             elements:{
                 NORTH:{
@@ -611,6 +627,7 @@ const expectedSchemaObject = {
     },
     directiveDefinitions:{
         example:{
+            isExtended:false,
             height:0,
             name:"example",
             elements:{
@@ -624,6 +641,7 @@ const expectedSchemaObject = {
             }
         },
         example2:{
+            isExtended:false,
             description:"directive for example2",
             name:"example2",
             height:0,
@@ -640,6 +658,7 @@ const expectedSchemaObject = {
             }
         },
         anotherExample3:{
+            isExtended:false,
             height:2,
             name:"anotherExample3",
             parameters:{
