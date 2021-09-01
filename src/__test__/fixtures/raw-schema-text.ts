@@ -1,3 +1,4 @@
+/* Convert schema file to text for testing */
 import { readFileSync } from 'fs'
 import { resolve } from 'path';
 

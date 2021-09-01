@@ -1,20 +1,31 @@
+/* Parses a GraphQL schema that has its directives encoded, creates all the types recognized by the spec */
 import { ScalarDefinition } from '../typedefs/base-type'
 import { DescribableParameterComponent, DirectiveAnnotation, InputFieldDefinition, NamedComponent, NameIndex, ParameterFieldDefinition } from '../typedefs/component'
-import { DirectiveDefinition, DirectiveDefinitionElement, EnumDefinition, EnumElement, ExecutableDirectiveLocationsEnum, TypeSystemDirectiveLocationsEnum, UnionDefinition, UnionElement } from '../typedefs/element-definition'
+import { DirectiveDefinition, DirectiveDefinitionElement, EnumDefinition, EnumElement, UnionDefinition, UnionElement } from '../typedefs/element-definition'
 import { InputDefinition, InterfaceDefinition, ObjectDefinition } from '../typedefs/fielded-type'
 import { getDirectiveProperties, ENCODING_FLAG } from './graphql-directive-parser'
 
+/************************************************START OF ALL REGEXP COMPONENTS************************************************/
+/*All regexp components must have match groups according to the group that has the same name with suffix "_GROUPS"
+
+/* Suffix used to denote a type that has been extended. Since extended objects do not have their own unique name, to avoid clashing key names, this suffix was requried*/
 const EXTENSION_NAME_SUFFIX = '_isExtended_'
 
-//(\s*"""([^"]+)"""\s*){0,1}
+/* Regexp that is reused for matching field descriptions */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1} */
 const FIELD_DESCRIPTION = '\(\\s*"""\(\[^"\]+\)"""\\s*\)\{0,1\}'
 
-//(\s*"([^"]+)"\s*){0,1}
+/* Regexp that is reused for matching field parameter descriptions */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"([^"]+)"\s*){0,1} */
 const PARAMETER_DESCRIPTION = '\(\\s*"\(\[^"\]+\)"\\s*\)\{0,1\}'
 
-//(\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z%]*){0,1}{([^}]+)}
+/* Regexp that is used for matching fielded objects such as an object, interface or input */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^(extend\s+){0,1}(type|interface|input){1}\s+(\w+){1}(\s+implements\s+){0,1}([\s\w&]*)([\s0-9a-zA-Z%]*){0,1}{([^}]+)} */
 const OBJECT_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\(extend\\s+\)\{0,1\}\(type|interface|input\)\{1\}\\s+\(\\w+\)\{1\}\(\\s+implements\\s+\)\{0,1\}\(\[\\s\\w&\]*\)\(\[\\s0-9a-zA-Z' + ENCODING_FLAG + '\]*\)\{0,1\}\{\(\[^\}\]+\)\}', 'gm')
-
+/* Group numbers OBJECT_REGEXP for matches */
 const OBJECT_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     EXTENDS_TAG: 3,
@@ -26,10 +37,11 @@ const OBJECT_REGEXP_GROUPS = {
     BODY: 9,
 }
 
-//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$)
+/* Regexp that is used for matching the raw text of the fields of a fielded type such as an object, input or interface */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^[\t ]*(\w+)(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$) */
 const FIELD_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\[\\t \]*\(\\w+\)\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$\)', 'gm')
-
-
+/* Group numbers FIELD_REGEXP for matches */
 const FIELD_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     NAME: 3,
@@ -38,11 +50,11 @@ const FIELD_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 7
 }
 
-// const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '^\[\\t \]*\(\\w+\)\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$\)', 'gm')
-//(\w+)[\t ]*:[\t ]*(\w+)[\t ]*([\w%]+)
-// const FIELD_PARAMETER_REGEXP=new RegExp('\(\\w+\)\[\\t \]*:\[\\t \]*\(\\w+\)\[\\t \]*\(\[\\w%\]+\)','gm')
-// (\s*"([^"]+)"\s*){0,1}[\t ]*(\w+)[\t ]*(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$|[%\w \t]*,|$)
+/* Regexp that is used for matching an the parameters inside the brackets of a field that can contain parameters belonging to a fielded type such as an object or interface  */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"([^"]+)"\s*){0,1}[\t ]*(\w+)[\t ]*(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$|[%\w \t]*,|$) */
 const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '\[\\t \]*\(\\w+\)\[\\t \]*\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$|\[' + ENCODING_FLAG + '\\w \\t\]*,|$\)', 'gm')
+/* Group numbers FIELD_PARAMETER_REGEXP for matches */
 const FIELD_PARAMETER_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     NAME: 3,
@@ -50,9 +62,11 @@ const FIELD_PARAMETER_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 7
 }
 
-//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
-//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$
+/* Regexp that is used for matching a union type */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}union\s+(\w+)\s*([%\sA-Za-z0-9]*)\s*=\s*(\|{0,1}[|\w\s%]+\|\s*\w+[%\w\s]+)$ */
 const UNION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}union\\s+\(\\w+\)\\s*\(\[' + ENCODING_FLAG + '\\sA-Za-z0-9\]*\)\\s*=\\s*\(\\|\{0,1\}\[|\\w\\s' + ENCODING_FLAG + '\]+\\|\\s*\\w+\[' + ENCODING_FLAG + '\\w\\s\]+\)$', 'gm');
+/* Group numbers UNION_REGEXP for matches */
 const UNION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     EXTENDS_TAG: 3,
@@ -61,8 +75,11 @@ const UNION_REGEXP_GROUPS = {
     UNION_ELEMENTS: 6,
 }
 
-//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}scalar\s+(\w+)\s*([%A-Za-z0-9]*)$
+/* Regexp that is used for matching a scalar type */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}scalar\s+(\w+)\s*([%A-Za-z0-9]*)$ */
 const SCALAR_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}scalar\\s+\(\\w+\)\\s*\(\[' + ENCODING_FLAG + 'A-Za-z0-9\]*\)$', 'gm')
+/* Group numbers SCALAR_REGEXP for matches */
 const SCALAR_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     EXTENDS_TAG: 3,
@@ -70,34 +87,22 @@ const SCALAR_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 5
 }
 
-//(\s*"""([^"]+)"""\s*){0,1}^\s*directive %\s*(\w+)\s*\({0,1}([\[\]%\s\w,:!]*)\){0,1}\s*on\s*([|\w\s]+\|\s*\w+|\s*\w+)
-//CORRECT ONE
-//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*([\w\s|]*)$
-
-// const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
+/* Regexp that is used for matching a directive definition type */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*([\w\s|]*)$ */
 const DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\[\\t \]*directive\\s+\[\\t \]+\(\[\\w' + ENCODING_FLAG + '\\t \]+\)\[\\t \]+on\[\\t \]*\(\[\\w\\s|\]*\)$', 'gm')
+/* Group numbers DIRECTIVE_DEFINITION_REGEXP for matches */
 const DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     DIRECTIVE: 3,
     DIRECTIVE_LOCATIONS: 4
 }
 
-//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
-//3=directives
-//4 contents
-//(\s*"""([^"]+)"""\s*){0,1}^[\t ]*directive\s+[\t ]+([\w%\t ]+)[\t ]+on[\t ]*$([\w\s|]*)$
-const MULTILINE_DIRECTIVE_DEFINITION_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*directive ' + ENCODING_FLAG + '\\s*\(\\w+\)\\s*\\(\{0,1\}\(\[\\[\\]' + ENCODING_FLAG + '\\s\\w,:!\]*\)\\)\{0,1\}\\s*on\\s*\(\[|\\w\\s]+\\|\\s*\\w+|\\s*\\w+\)', 'gm')
-const MULTILINE_DIRECTIVE_DEFINITION_REGEXP_GROUPS = {
-    DESCRIPTION: 2,
-    DIRECTIVE: 3,
-    DIRECTIVE_LOCATIONS: 4
-}
-
-
-
-
-//(\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}enum\s+(\w+){1}([%\s\w,:\(\)!\[\]]*){0,1}{([^}]+)}
+/* Regexp that is used for matching enum type */
+/* Unescaped Regexp, useful for debugging*/
+/* (\s*"""([^"]+)"""\s*){0,1}^\s*(extend\s+){0,1}enum\s+(\w+){1}([%\s\w,:\(\)!\[\]]*){0,1}{([^}]+)} */
 const ENUM_REGEXP = new RegExp(FIELD_DESCRIPTION + '^\\s*\(extend\\s+\)\{0,1\}enum\\s+\(\\w+\)\{1\}\(\[' + ENCODING_FLAG + '\\s\\w,:\\(\\)!\\[\\]\]*\)\{0,1\}\{\(\[^\}\]+)\}', 'gm')
+/* Group numbers ENUM_REGEXP for matches */
 const ENUM_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     EXTENDS_TAG: 3,
@@ -105,7 +110,14 @@ const ENUM_REGEXP_GROUPS = {
     ENCODED_DIRECTIVES: 5,
     ELEMENTS: 6
 }
+/************************************************END OF ALL REGEXP COMPONENTS************************************************/
 
+/**
+ * parses an encoded schema text and build all union types and returns a NameIndex of them 
+ * @param encodedDirectivesSchemaText the text string of a schema whose root directives have all been encoded
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all unions in the schema 
+ */
 const getUnions = (encodedDirectivesSchemaText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<UnionDefinition> => {
     const unionMatches = [...encodedDirectivesSchemaText.matchAll(UNION_REGEXP)]
     const results: NameIndex<UnionDefinition> = {}
@@ -132,8 +144,12 @@ const getUnions = (encodedDirectivesSchemaText: string, directiveProperties: Nam
     return results;
 }
 
-
-
+/**
+ * parses an encoded schema text and build all union types and returns a NameIndex of them
+ * @param encodedDirectivesSchemaText the text string of a schema whose root directives have all been encoded
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all scalars in the schema 
+ */
 const getScalars = (encodedDirectivesSchemaText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<ScalarDefinition> => {
     const scalarMatches = [...encodedDirectivesSchemaText.matchAll(SCALAR_REGEXP)]
     const results: NameIndex<ScalarDefinition> = {}
@@ -153,7 +169,12 @@ const getScalars = (encodedDirectivesSchemaText: string, directiveProperties: Na
     return results;
 }
 
-
+/**
+ * parses an encoded schema text and build all directive definition types and returns a NameIndex of them
+ * @param encodedDirectivesSchemaText the text string of a schema whose root directives have all been encoded
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all directive definitions in the schema 
+ */
 const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<DirectiveDefinition> => {
     const directiveDefinitionMatches = [...encodedDirectivesSchemaText.matchAll(DIRECTIVE_DEFINITION_REGEXP)]
     const results: NameIndex<DirectiveDefinition> = {}
@@ -176,7 +197,7 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
                     console.log(e)
                 }
             })
-        results[name]={name, elements, isExtended}
+        results[name] = { name, elements, isExtended }
         if (description) {
             results[name].description = description.trim()
         }
@@ -188,14 +209,18 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
     return results;
 }
 
-
-//gets all fielded types
+/**
+ * parses an encoded schema text and build all types which contain fields which are: object, inputs and interface types and returns a NameIndex of them.
+ * Since the regex is so similar between the three all of the parsing was done on this function.
+ * @param encodedDirectivesSchemaText the text string of a schema whose root directives have all been encoded
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all fielded types which are objects, interfaces and inputs in the schema 
+ */
 const getFieldedTypes = (encodedDirectivesSchemaText: string, directiveProperties: NameIndex<DirectiveAnnotation>): {
     objects?: NameIndex<ObjectDefinition>,
     interfaces?: NameIndex<InterfaceDefinition>,
     inputs?: NameIndex<InputDefinition>,
 } => {
-
     const typeMatches = [...encodedDirectivesSchemaText.matchAll(OBJECT_REGEXP)]
     typeMatches.forEach(typeMatch => delete typeMatch.input)
     let results: {
@@ -222,7 +247,7 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
                 result.fields = getInputFieldProperties(rawTextFields, directiveProperties)
             } else if (typeLabel === 'interface') {
                 result = new InterfaceDefinition({ name, isExtended })
-                result.fields = getInputFieldProperties(rawTextFields, directiveProperties)
+                result.fields = getParameterFieldProperties(rawTextFields, directiveProperties)
             } else {
                 let object = new ObjectDefinition({ name, isExtended })
                 if (interfaces && interfaces.length > 0) {
@@ -242,10 +267,8 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
                 if (Object.keys(fields).length > 0) {
                     object.fields = fields
                 }
-
                 result = object
             }
-
             if (description) {
                 result.description = description.trim();
             }
@@ -269,18 +292,18 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
     return results
 }
 
-
-
-
-
-//parse text inside inside brackets of a field that has parameters
+/**
+ * parses an FIELD_REGEXP_GROUPS.PARAMETERS which is the text inside the parameter brackets of a field (for an object or interface type), parses them and creates an index of
+ * these parameter objects. These parameters can also have descriptions 
+ * @param rawParametersText the text string inside the parameters brackets of a field (that can contain parameters, which are objects and interfaces)
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all parameters of a field from a type in the schema 
+ */
 const getParameterProperties = (rawParametersText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<DescribableParameterComponent> => {
     const matches = [...rawParametersText.matchAll(FIELD_PARAMETER_REGEXP)]
-
     let results: NameIndex<DescribableParameterComponent> = {}
     matches
         .forEach((match) => {
-
             const name = match[FIELD_PARAMETER_REGEXP_GROUPS.NAME]
             const type = match[FIELD_PARAMETER_REGEXP_GROUPS.TYPE]
             const directives = match[FIELD_PARAMETER_REGEXP_GROUPS.ENCODED_DIRECTIVES]
@@ -298,7 +321,12 @@ const getParameterProperties = (rawParametersText: string, directiveProperties: 
     return results
 }
 
-//parses the field of a type definition
+/**
+ * parses an OBJECT_REGEXP_GROUPS.BODY which is the fields of an object or interface type as text and build all fields returns a NameIndex of them. These fields have optional parameters
+ * @param rawTextFields the text string of all the fields that can have parameters of an individual type from the schema, these types are objects and interfaces
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all fields of a types from the schema that can contain parameters in their fields
+ */
 const getParameterFieldProperties = (rawTextFields: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<ParameterFieldDefinition> => {
     let results: NameIndex<ParameterFieldDefinition> = new NameIndex<ParameterFieldDefinition>()
     const matches = [...rawTextFields.matchAll(FIELD_REGEXP)]
@@ -309,7 +337,7 @@ const getParameterFieldProperties = (rawTextFields: string, directiveProperties:
             const directives = match[FIELD_REGEXP_GROUPS.ENCODED_DIRECTIVES]
             const parameters = match[FIELD_REGEXP_GROUPS.PARAMETERS]
             const description = match[FIELD_REGEXP_GROUPS.DESCRIPTION]
-            
+
             if (name && type) {
                 results[name] = { name, type }
                 if (description && description.length > 0) {
@@ -321,14 +349,17 @@ const getParameterFieldProperties = (rawTextFields: string, directiveProperties:
                 if (parameters && parameters.length > 0) {
                     results[name].parameters = getParameterProperties(parameters, directiveProperties)
                 }
-
             }
-
         })
     return results
 }
 
-//parses the field of a type definition
+/**
+ * parses an OBJECT_REGEXP_GROUPS.BODY which is the fields of an input type as text and builds all fields returns a NameIndex of them. These fields cannot have parameters 
+ * @param rawTextFields the text string of all the fields that CANNOT have parameters of an individual type from the schema, these types are inputs
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all fields of a types from the schema that CANNOT contain parameters in their fields, these types are inputs
+ */
 const getInputFieldProperties = (rawTextFields: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<InputFieldDefinition> => {
     let results: NameIndex<InputFieldDefinition> = {}
     const matches = [...rawTextFields.matchAll(FIELD_REGEXP)]
@@ -351,12 +382,12 @@ const getInputFieldProperties = (rawTextFields: string, directiveProperties: Nam
     return results
 }
 
-
-// if(type==='inputs'){
-//     results[type]![name].fields = getInputFieldProperties(rawTextFields,directiveProperties)
-// }else{
-//     results[type]![name].fields = getParameterFieldProperties(rawTextFields,directiveProperties)
-// }
+/**
+ * parses an encoded schema text and build all enum types and returns a NameIndex of them
+ * @param encodedDirectivesSchemaText the text string of a schema whose root directives have all been encoded
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all enums in the schema 
+ */
 const getEnums = (encodedDirectivesSchemaText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<EnumDefinition> => {
     let results = new NameIndex<EnumDefinition>();
     const enumMatches = [...encodedDirectivesSchemaText.matchAll(ENUM_REGEXP)]
@@ -380,6 +411,12 @@ const getEnums = (encodedDirectivesSchemaText: string, directiveProperties: Name
     return results;
 }
 
+/**
+ * parses ENUM_REGEXP_GROUPS.ELEMENTS encoded schema text and build all union elements and returns a NameIndex of them
+ * @param rawEnumValuesText the text string of a the elements listed in an enum
+ * @param directiveProperties the datastructure containing all the root directives that corresponds to the schema in which the encodedDirectiveComponent text was taken from
+ * @returns a name index of all enum elements belonging to an enum in the schema
+ */
 const getEnumElements = (rawEnumValuesText: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<EnumElement> => {
     let results = new NameIndex<EnumElement>();
     rawEnumValuesText

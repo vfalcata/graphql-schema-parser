@@ -1,8 +1,7 @@
+/* Types that contain a list of elements, such as enum, union, directive definition */
+
 import { DirectiveAnnotation, NameIndex, NamedComponent, NamedComponentAttrs, ParameterComponent } from './component';
 import {  SchemaTypeDefinition, SchemaTypeDefinitionAttrs } from './base-type';
-
-
-
 
 abstract class ElementCollection<TYPE extends Element> extends SchemaTypeDefinition{
     elements:NameIndex<TYPE>;
@@ -56,11 +55,9 @@ abstract class DirectibleElement extends Element{
     }
 }
 
-
 interface DirectibleElementAttrs extends ElementAttrs{
     directives?: NameIndex<DirectiveAnnotation>;
 }
-
 
 class EnumDefinition extends DirectibleElementCollection<EnumElement>{
 
@@ -68,7 +65,6 @@ class EnumDefinition extends DirectibleElementCollection<EnumElement>{
 class EnumElement extends DirectibleElement{
 
 }
-
 
 class UnionElement extends DirectibleElement{
 
@@ -110,15 +106,7 @@ enum ExecutableDirectiveLocationsEnum{
     FRAGMENT_SPREAD='FRAGMENT_SPREAD',
     INLINE_FRAGMENT='INLINE_FRAGMENT'
 }
-// enum ExecutableDirectiveLocationsEnum{
-//     QUERY,
-//     MUTATION,
-//     SUBSCRIPTION,
-//     FIELD,
-//     FRAGMENT_DEFINITION,
-//     FRAGMENT_SPREAD,
-//     INLINE_FRAGMENT
-// }
+
 enum TypeSystemDirectiveLocationsEnum{
     SCHEMA='SCHEMA',
     SCALAR='SCALAR',

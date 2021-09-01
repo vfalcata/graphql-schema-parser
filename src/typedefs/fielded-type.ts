@@ -1,6 +1,7 @@
+/* Types that have fields, such as an object, input or interface */
+
 import { InputFieldDefinition, NamedComponent, NameIndex, ParameterFieldDefinition } from "./component";
 import { DirectibleSchemaTypeDefinition,DirectibleSchemaTypeDefinitionAttrs } from "./base-type";
-
 
 class FieldedTypeDefinition<T extends InputFieldDefinition> extends DirectibleSchemaTypeDefinition {
     description?:string;
@@ -27,7 +28,6 @@ interface ObjectDefinitionAttrs extends FieldedTypeDefinitionAttrs{
 class InterfaceDefinition extends FieldedTypeDefinition<ParameterFieldDefinition>{
     
 }
-
 
 class InputDefinition extends FieldedTypeDefinition<InputFieldDefinition>{
 
