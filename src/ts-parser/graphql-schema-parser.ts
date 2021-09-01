@@ -10,9 +10,9 @@ import {
 } from './graphql-directive-parser'
 import {readFileSync} from 'fs'
 import {resolve} from 'path';
-import { GraphQLSchema,GraphQLSchemaObject } from '../typedefs/graphql-schema';
+import { GraphQLSchema,GraphQLSchemaAttrs } from '../typedefs/graphql-schema';
 
-const generateSchemaObject = (rawGraphqlSchemaText:string,name:string):GraphQLSchemaObject => {
+const generateSchemaObject = (rawGraphqlSchemaText:string,name:string):GraphQLSchemaAttrs => {
     const { encodedDirectivesSchemaText, directiveProperties } = parseDirectives(rawGraphqlSchemaText)
     const types = getFieldedTypes(encodedDirectivesSchemaText,directiveProperties)
     const unions = getUnions(encodedDirectivesSchemaText,directiveProperties)

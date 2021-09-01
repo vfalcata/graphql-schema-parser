@@ -15,6 +15,7 @@ const expectedSchemaObject = {
             },
             directives: {
                 include1: {
+                    name:"include1",
                     height:1,
                     parameters: {
                         if: {
@@ -24,6 +25,7 @@ const expectedSchemaObject = {
                     }
                 },
                 exclude1: {
+                    name:"exclude1",
                     height:1,
                     parameters: {
                         if: {
@@ -35,7 +37,7 @@ const expectedSchemaObject = {
             },
             isExtended: true,
             fields: {
-                user: {
+                users: {
                     description:"gets the users",
                     name: "user",
                     parameters: {
@@ -326,6 +328,17 @@ const expectedSchemaObject = {
 
                         }
                     }
+                },    
+                createPost:{
+                    name:"createPost",
+                    type:"Post!",
+                    parameters:{
+                        data:{
+                            name:"data",
+                            type:"CreatePostInput!"
+                        }
+                    }
+
                 }
             }
         },
@@ -468,6 +481,7 @@ const expectedSchemaObject = {
         },
         SearchResult4:{
             isExtended:false,
+            description:"Make a SearchResult4",
             name:"SearchResult4",
             directives:{
                 dir3:{
@@ -510,7 +524,7 @@ const expectedSchemaObject = {
             description:"Time for scalar time"
         },
         Url_isExtended_:{
-            name:"Url",
+            name:"Url_isExtended_",
             isExtended:true
         },
         Time2_isExtended_:{
@@ -582,6 +596,12 @@ const expectedSchemaObject = {
             name:"Direction_isExtended_",
             description:"extended Direction enum",
             isExtended:true,
+            directives:{
+                direnum1:{
+                    name:"direnum1",
+                    height:0
+                }
+            },
             elements:{
                 NORTH:{
                     name:"NORTH",

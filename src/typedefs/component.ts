@@ -43,7 +43,9 @@ abstract class DirectibleComponent extends NamedComponent{
     directives?:NameIndex<DirectiveAnnotation>
     constructor(directibleComponentAttrs:DirectibleComponentAttrs){
         super(directibleComponentAttrs);
-        this.directives=directibleComponentAttrs.directives?directibleComponentAttrs.directives:new NameIndex<DirectiveAnnotation>()
+        if(directibleComponentAttrs.directives && Object.keys(directibleComponentAttrs.directives).length>0){
+            this.directives=directibleComponentAttrs.directives;
+        }
     }
 }
 
@@ -53,7 +55,9 @@ class DirectiveAnnotation extends NamedComponent{
 
     constructor(directiveAnnotationAttrs:DirectiveAnnotationAttrs){
         super(directiveAnnotationAttrs)
-        this.parameters=directiveAnnotationAttrs.parameters?directiveAnnotationAttrs.parameters:new NameIndex<ParameterComponent>();
+        if(directiveAnnotationAttrs.parameters && Object.keys(directiveAnnotationAttrs.parameters).length>0){
+            this.parameters=directiveAnnotationAttrs.parameters;
+        }
         this.height=directiveAnnotationAttrs.height?directiveAnnotationAttrs.height:1;        
     }
 }
@@ -79,7 +83,9 @@ class DescribableParameterComponent extends ParameterComponent{
     description?:string;
     constructor(describableParameterComponentAttrs:DescribableParameterComponentAttrs){
         super(describableParameterComponentAttrs)
-        this.description=describableParameterComponentAttrs.description
+        if(describableParameterComponentAttrs.description && describableParameterComponentAttrs.description.length>0){
+            this.description=describableParameterComponentAttrs.description
+        }        
     }
 }
 
@@ -93,7 +99,10 @@ class InputFieldDefinition extends ParameterComponent{
     description?:string;
     constructor(inputFieldDefinitionAttrs:InputFieldDefinitionAttrs){
         super(inputFieldDefinitionAttrs)
-        this.description=inputFieldDefinitionAttrs.description
+        if(inputFieldDefinitionAttrs.description && inputFieldDefinitionAttrs.description.length>0){
+            this.description=inputFieldDefinitionAttrs.description
+        }     
+        
     }
     
 }
@@ -107,7 +116,10 @@ class ParameterFieldDefinition extends InputFieldDefinition{
     parameters?:NameIndex<DescribableParameterComponent>;
     constructor(parameterFieldDefinitionAttrs:ParameterFieldDefinitionAttrs){
         super(parameterFieldDefinitionAttrs)
-        this.parameters=parameterFieldDefinitionAttrs.parameters??new NameIndex<DescribableParameterComponent>();       
+        if(parameterFieldDefinitionAttrs.parameters && Object.keys(parameterFieldDefinitionAttrs.parameters).length>0){
+            this.parameters=parameterFieldDefinitionAttrs.parameters
+        }
+  
     }
 }
 

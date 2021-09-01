@@ -19,31 +19,59 @@ class GraphQLSchema extends DirectibleComponent{
     directiveDefinitions?:NameIndex<DirectiveDefinition>;
     constructor(graphQLSchemaAttrs:GraphQLSchemaAttrs){
         super(graphQLSchemaAttrs);
-        this.objects=new NameIndex<ObjectDefinition>();
-        this.scalars=new NameIndex<ScalarDefinition>();
-        this.interfaces=new NameIndex<InterfaceDefinition>();
-        this.unions=new NameIndex<UnionDefinition>();
-        this.enums=new NameIndex<EnumDefinition>();
-        this.inputs=new NameIndex<InputDefinition>();
-        this.directiveDefinitions=new NameIndex<DirectiveDefinition>();
+        if(graphQLSchemaAttrs.objects && Object.keys(graphQLSchemaAttrs.objects).length>0){
+            this.objects=graphQLSchemaAttrs.objects
+        }
+        if(graphQLSchemaAttrs.scalars && Object.keys(graphQLSchemaAttrs.scalars).length>0){
+            this.scalars=graphQLSchemaAttrs.scalars
+        }
+        if(graphQLSchemaAttrs.interfaces && Object.keys(graphQLSchemaAttrs.interfaces).length>0){
+            this.interfaces=graphQLSchemaAttrs.interfaces;
+        }
+        if(graphQLSchemaAttrs.unions && Object.keys(graphQLSchemaAttrs.unions ).length>0){
+            this.unions=graphQLSchemaAttrs.unions;
+        }
+        if(graphQLSchemaAttrs.enums && Object.keys(graphQLSchemaAttrs.enums).length>0){
+            this.enums=graphQLSchemaAttrs.enums;
+        }
+        if(graphQLSchemaAttrs.inputs && Object.keys(graphQLSchemaAttrs.inputs).length>0){
+            this.inputs=graphQLSchemaAttrs.inputs;
+        }
+        if(graphQLSchemaAttrs.directiveDefinitions && Object.keys(graphQLSchemaAttrs.directiveDefinitions).length>0){
+            this.directiveDefinitions=graphQLSchemaAttrs.directiveDefinitions
+        }       
     }
 
-    getSchemaObject():GraphQLSchemaObject{
-        return{
-            name:this.name,
-            objects:this.objects,
-            scalars:this.scalars,
-            interfaces:this.interfaces,
-            unions:this.unions,
-            enums:this.enums,
-            inputs:this.inputs,
-            directiveDefinitions:this.directiveDefinitions
+    getSchemaObject():GraphQLSchemaAttrs{
+        let result:GraphQLSchemaAttrs ={name:this.name}
+        if(this.objects){
+            result.objects=this.objects
         }
+        if(this.scalars){
+            result.scalars=this.scalars
+        }
+        if(this.interfaces){
+            result.interfaces=this.interfaces;
+        }
+        if(this.unions){
+            result.unions=this.unions;
+        }
+        if(this.enums){
+            result.enums=this.enums;
+        }
+        if(this.inputs){
+            result.inputs=this.inputs;
+        }
+        if(this.directiveDefinitions){
+            result.directiveDefinitions=this.directiveDefinitions
+        }  
+        return result;
     }
 
 }
 
-interface GraphQLSchemaObject{
+
+interface GraphQLSchemaAttrs extends DirectibleComponentAttrs {
     name:string,
     objects?:NameIndex<ObjectDefinition>;
     scalars?:NameIndex<ScalarDefinition>;
@@ -52,10 +80,6 @@ interface GraphQLSchemaObject{
     enums?:NameIndex<EnumDefinition>;
     inputs?:NameIndex<InputDefinition>;
     directiveDefinitions?:NameIndex<DirectiveDefinition>;
-}
-
-interface GraphQLSchemaAttrs extends DirectibleComponentAttrs {
-    name:string
 }
 
 enum GraphQLType {
@@ -72,5 +96,5 @@ enum GraphQLType {
 
 export {
     GraphQLSchema,
-    GraphQLSchemaObject
+    GraphQLSchemaAttrs
 }

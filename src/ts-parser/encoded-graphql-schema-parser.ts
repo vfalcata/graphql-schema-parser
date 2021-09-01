@@ -41,8 +41,8 @@ const FIELD_REGEXP_GROUPS = {
 // const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '^\[\\t \]*\(\\w+\)\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$\)', 'gm')
 //(\w+)[\t ]*:[\t ]*(\w+)[\t ]*([\w%]+)
 // const FIELD_PARAMETER_REGEXP=new RegExp('\(\\w+\)\[\\t \]*:\[\\t \]*\(\\w+\)\[\\t \]*\(\[\\w%\]+\)','gm')
-// (\s*"([^"]+)"\s*){0,1}[\t ]*(\w+)[\t ]*(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$|[%\w \t]+,)
-const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '\[\\t \]*\(\\w+\)\[\\t \]*\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$|\[' + ENCODING_FLAG + '\\w \\t\]+,\)', 'gm')
+// (\s*"([^"]+)"\s*){0,1}[\t ]*(\w+)[\t ]*(\(([^\)]+)\)){0,1}:([\w\t \[\]!]+)[\t ]*($|[%\w \t]+$|[%\w \t]*,|$)
+const FIELD_PARAMETER_REGEXP = new RegExp(PARAMETER_DESCRIPTION + '\[\\t \]*\(\\w+\)\[\\t \]*\(\\(\(\[^\\)\]+\)\\)\)\{0,1\}:\(\[\\w\\t \\[\\]!\]+\)\[\\t \]*\($|\[' + ENCODING_FLAG + '\\w \\t\]+$|\[' + ENCODING_FLAG + '\\w \\t\]*,|$\)', 'gm')
 const FIELD_PARAMETER_REGEXP_GROUPS = {
     DESCRIPTION: 2,
     NAME: 3,
@@ -162,7 +162,7 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
         const directive = directiveProperties[directiveId]
         const name = directive.name
         const parameters = directive.parameters
-        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION] ? directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION].trim() : directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]
+        const description = directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DESCRIPTION]
         const isExtended = false
         let elements: NameIndex<DirectiveDefinitionElement> = {}
         directiveDefinitionMatch[DIRECTIVE_DEFINITION_REGEXP_GROUPS.DIRECTIVE_LOCATIONS]
@@ -178,7 +178,7 @@ const getDirectiveDefinitions = (encodedDirectivesSchemaText: string, directiveP
             })
         results[name]={name, elements, isExtended}
         if (description) {
-            results[name].description = description
+            results[name].description = description.trim()
         }
         if (parameters) {
             results[name].parameters = parameters
@@ -215,10 +215,7 @@ const getFieldedTypes = (encodedDirectivesSchemaText: string, directivePropertie
         const name = isExtended ? match[OBJECT_REGEXP_GROUPS.NAME] + EXTENSION_NAME_SUFFIX : match[OBJECT_REGEXP_GROUPS.NAME]
         const interfaces = match[OBJECT_REGEXP_GROUPS.IMPLEMENTS]
         const rawTextFields = match[OBJECT_REGEXP_GROUPS.BODY]
-        const description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION] ? match[OBJECT_REGEXP_GROUPS.DESCRIPTION].trim() : match[OBJECT_REGEXP_GROUPS.DESCRIPTION]
-
-
-
+        const description = match[OBJECT_REGEXP_GROUPS.DESCRIPTION]
         if (name && typeLabel && rawTextFields) {
             if (typeLabel === 'input') {
                 result = new InputDefinition({ name, isExtended })
@@ -303,7 +300,7 @@ const getParameterProperties = (rawParametersText: string, directiveProperties: 
 
 //parses the field of a type definition
 const getParameterFieldProperties = (rawTextFields: string, directiveProperties: NameIndex<DirectiveAnnotation>): NameIndex<ParameterFieldDefinition> => {
-    let results: NameIndex<ParameterFieldDefinition> = {}
+    let results: NameIndex<ParameterFieldDefinition> = new NameIndex<ParameterFieldDefinition>()
     const matches = [...rawTextFields.matchAll(FIELD_REGEXP)]
     matches
         .forEach((match) => {
@@ -312,8 +309,9 @@ const getParameterFieldProperties = (rawTextFields: string, directiveProperties:
             const directives = match[FIELD_REGEXP_GROUPS.ENCODED_DIRECTIVES]
             const parameters = match[FIELD_REGEXP_GROUPS.PARAMETERS]
             const description = match[FIELD_REGEXP_GROUPS.DESCRIPTION]
+            
             if (name && type) {
-                results[name] = new ParameterFieldDefinition({ name, type })
+                results[name] = { name, type }
                 if (description && description.length > 0) {
                     results[name].description = description.trim()
                 }

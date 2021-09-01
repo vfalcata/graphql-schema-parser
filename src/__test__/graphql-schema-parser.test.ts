@@ -6,12 +6,14 @@ import { Console } from 'console'
 
 
 it('generates a schema object with all the expected properties and values', () => {
-    compareSchemaObjects(expectedSchemaObject, generateSchemaObject(rawSchemaText, 'test-schema'))
+    // console.log('gooby',generateSchemaObject(rawSchemaText, 'test-schema').objects!.Mutation.fields!.updateUser)
+    let results=compareSchemaObjects(expectedSchemaObject, generateSchemaObject(rawSchemaText, 'test-schema'))
+    expect(results.isEqual).toBe(true)
     // console.log('FINALL',compareSchemaObjects(expectedSchemaObject, generateSchemaObject(rawSchemaText, 'test-schema')))
 })
 
 //precondition, none
-const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any): {isEqual:boolean,reason?:string,expected:any,actual:any} => {
+const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any): {isEqual:boolean,reason?:string,expected:any,actual:any,expectedParent:any,actualParent:any} => {
 
     let {stringProperties:expectedStringProperties,  objectProperties:expected}=splitStringProperties(expectedSchemaObject)
     let {stringProperties:actualStringProperties,  objectProperties:actual}=splitStringProperties(actualSchemaObject)
@@ -28,17 +30,17 @@ const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any
     
     // // base case: all properties is a string and are they equal
     //(getKeys(actual).length === 0) && (getKeys(expected).length === 0)
-    console.log('actualactualactual', getKeys(actual))
-    console.log('expectedexpectedexpected', getKeys(expected))
+    // console.log('actualactualactual', getKeys(actual))
+    // console.log('expectedexpectedexpected', getKeys(expected))
     if ((!getKeys(actual) && !getKeys(expected)) ||(getKeys(actual).length===0 && getKeys(expected).length===0)) {
-        console.log('procced');
-        console.log('expected procced1',expectedStringProperties);
-        console.log('actual procced1',actualStringProperties);
+        // console.log('procced');
+        // console.log('expected procced1',expectedStringProperties);
+        // console.log('actual procced1',actualStringProperties);
         if(isKeyValueArrayEqual(expectedStringProperties,actualStringProperties)) {
-            console.log('proc 1 sucess')
-            return {isEqual:true,reason:"objects match",expected:{},actual:{}};
+            // console.log('proc 1 sucess')
+            return {isEqual:true,reason:"objects match",expected:{},actual:{},expectedParent:expectedSchemaObject,actualParent:actualSchemaObject};
         }else{
-            return {isEqual:false,reason:"string based properties do not match",expected:expectedStringProperties,actual:actualStringProperties};
+            return {isEqual:false,reason:"string based properties do not match",expected:expectedStringProperties,actual:actualStringProperties,expectedParent:expectedSchemaObject,actualParent:actualSchemaObject};
         }
         
     }
@@ -46,34 +48,37 @@ const compareSchemaObjects = (expectedSchemaObject: any, actualSchemaObject: any
     // // inductive step:
     //does properties of string match?
     if(!isKeyValueArrayEqual(expectedStringProperties,actualStringProperties)){
-        console.log('expectedStringProperties procced1',expectedStringProperties);
-        console.log('actualStringProperties procced1',actualStringProperties);
-        return {isEqual:false,reason:"string based properties do not match",expected:expectedStringProperties,actual:actualStringProperties};
+        // console.log('expectedStringProperties procced2',expectedStringProperties);
+        // console.log('actualStringProperties procced2',actualStringProperties);
+        return {isEqual:false,reason:"string based properties do not match",expected:expectedStringProperties,actual:actualStringProperties,expectedParent:expectedSchemaObject,actualParent:actualSchemaObject};
     }
 
     //does object property keys match?
     if(!isPropertyNamesEqual(getKeys(actual),getKeys(expected))){
-        console.log('procced2');
-        return {isEqual:false,reason:"object based properties keys do not match",expected:getKeys(actual),actual:getKeys(expected)};
+        // console.log('expectedStringProperties procced3',getKeys(expected),expected);
+        // console.log('actualStringProperties procced3',getKeys(actual),actual);
+        return {isEqual:false,reason:"object based properties keys do not match",expected:getKeys(expected),actual:getKeys(actual),expectedParent:expectedSchemaObject,actualParent:actualSchemaObject};
     }
-    //doeds subtree match
+    //does all properties key value pair match
     for (const property in expected) {
         let result = compareSchemaObjects(expected[property], actual[property])
         // console.log('expected subbb',expected[property])
         // console.log('actual subbb',actual[property])
         isEqual=isEqual&&result.isEqual
         if(!isEqual){
-            return {isEqual:false,reason:`child properties of key ${property} do not match`,expected:expected[property],actual:actual[property]};
+            console.log('failyre expectedd', result)
+            // console.log('failyre actuall', actual[property])
+            return result;
         }
     }
-    return {isEqual,reason:"objects match, success",expected:{},actual:{}};
+    return {isEqual,reason:"objects match, success",expected:{},actual:{},expectedParent:expectedSchemaObject,actualParent:actualSchemaObject};
 }
 // postcondition: returns if actual and expected object match in their defined properties
 
 const getKeys=(obj:any):string[]=>{
     let result=[]
     for(const property in obj){
-        if(obj[property]){
+        if(obj[property] && Object.keys(obj[property]).length>0){
             result.push(property)
         }
     }

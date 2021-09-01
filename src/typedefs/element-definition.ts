@@ -33,7 +33,9 @@ abstract class DirectibleElementCollection<TYPE extends Element> extends Element
 
     constructor(directibleElementCollectionAttrs:DirectibleElementCollectionAttrs<TYPE>){
         super(directibleElementCollectionAttrs)
-        this.directives=directibleElementCollectionAttrs.directives?directibleElementCollectionAttrs.directives:new NameIndex<DirectiveAnnotation>();
+        if(directibleElementCollectionAttrs.directives && Object.keys(directibleElementCollectionAttrs.directives).length>0){
+            this.directives=directibleElementCollectionAttrs.directives;
+        }
         this.isExtended=false;
 
     }
@@ -47,7 +49,10 @@ abstract class DirectibleElement extends Element{
     directives?: NameIndex<DirectiveAnnotation>;
     constructor(directibleElementAttrs:DirectibleElementAttrs){
         super(directibleElementAttrs)
-        this.directives=directibleElementAttrs.directives;
+        if(directibleElementAttrs.directives && Object.keys(directibleElementAttrs.directives).length>0){
+            this.directives=directibleElementAttrs.directives;
+        }
+        
     }
 }
 
@@ -77,7 +82,9 @@ class DirectiveDefinition extends ElementCollection<DirectiveDefinitionElement>{
     parameters?:NameIndex<ParameterComponent>;
     constructor(directiveDefinitionAttrs:DirectiveDefinitionAttrs){
         super(directiveDefinitionAttrs);
-        this.parameters=directiveDefinitionAttrs.parameters;
+        if(directiveDefinitionAttrs.parameters && Object.keys(directiveDefinitionAttrs.parameters).length>0){
+            this.parameters=directiveDefinitionAttrs.parameters;
+        }
     }
 }
 

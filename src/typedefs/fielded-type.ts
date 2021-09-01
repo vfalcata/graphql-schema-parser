@@ -13,7 +13,10 @@ class ObjectDefinition extends FieldedTypeDefinition<ParameterFieldDefinition>{
     implements?:NameIndex<NamedComponent>
     constructor(objectDefinitionAttrs:ObjectDefinitionAttrs){
         super(objectDefinitionAttrs)
-        this.implements=objectDefinitionAttrs.implements;
+        if(objectDefinitionAttrs.implements && Object.keys(objectDefinitionAttrs.implements).length>0){
+            this.implements=objectDefinitionAttrs.implements;
+        }
+        
     }
 }
 

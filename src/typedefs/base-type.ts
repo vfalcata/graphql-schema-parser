@@ -6,7 +6,9 @@ abstract class SchemaTypeDefinition extends NamedComponent{
 
     constructor(schemaTypeDefinitionAttrs:SchemaTypeDefinitionAttrs){
         super(schemaTypeDefinitionAttrs)
-        this.description=schemaTypeDefinitionAttrs.name;
+        if(schemaTypeDefinitionAttrs.description && schemaTypeDefinitionAttrs.description.length>0){
+            this.description=schemaTypeDefinitionAttrs.description;
+        }        
         this.isExtended=schemaTypeDefinitionAttrs.isExtended?true:false
     }
 }
@@ -21,7 +23,10 @@ abstract class DirectibleSchemaTypeDefinition extends SchemaTypeDefinition{
 
     constructor(directibleSchemaTypeDefinitionAttrs:DirectibleSchemaTypeDefinitionAttrs){
         super(directibleSchemaTypeDefinitionAttrs)
-        this.directives=directibleSchemaTypeDefinitionAttrs.directives;
+        if(directibleSchemaTypeDefinitionAttrs.directives && Object.keys(directibleSchemaTypeDefinitionAttrs.directives).length>0){
+            this.directives=directibleSchemaTypeDefinitionAttrs.directives;
+        }
+        
     }
 }
 interface DirectibleSchemaTypeDefinitionAttrs extends SchemaTypeDefinitionAttrs{
