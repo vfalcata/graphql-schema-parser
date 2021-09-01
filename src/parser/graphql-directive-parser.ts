@@ -153,7 +153,6 @@ const getDirectiveParameters = (rawParametersFieldText: string, directivesProper
             name: parameterName,
             type: parameterType
         })
-        // let directives: NameIndex<DirectiveAnnotation>;
         directivesForParameter.forEach((parameterDirectiveId) => {
             if (!directiveParameters[parameterName].directives) {
                 directiveParameters[parameterName].directives = new NameIndex<DirectiveAnnotation>();
