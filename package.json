@@ -1,27 +1,36 @@
 {
-  "name": "graphql-parser",
-  "version": "1.0.0",
-  "description": "INSERT",
-  "main": "INSERT.js",
+  "name": "graphql-schema-parser",
+  "version": "1.0.7",
+  "description": "parses a GraphQL schema file and generates an object that represents it. Follows 2018 GraphQL schema specification. Has no dependencies",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "files": [
+    "build/**/*"
+  ],
   "scripts": {
+    "clean": "del ./build/*",
+    "build": "npm run clean && tsc && del ./build/__test__",
     "test": "jest",
-    "exec": "tsc --downlevelIteration src/ts-parser/graphql-schema-parser.ts && node src/ts-parser/graphql-schema-parser.js"
+    "test:ci": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "INSERT"
+    "url": "https://github.com/vfalcata/graphql-schema-parser.git"
   },
   "jest": {
     "preset": "ts-jest"
   },
   "keywords": [
-    "INSERT"
+    "GraphQL",
+    "Parser",
+    "Code-Generation"
   ],
-  "author": "INSERT",
+  "author": "vfalcata",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.8",
+    "del-cli": "^4.0.1",
     "jest": "^27.1.0",
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.2"

@@ -9,7 +9,7 @@ import { GraphQLSchema, GraphQLSchemaAttrs } from '../typedefs/graphql-schema';
  * @param name the name that corresponds to the GraphQLSchema object that will be generated, this is useful for indexing if generating from multiple schema files
  * @returns  GraphQLSchemaAttrs the attrs was used here so that implicit functional components of the GraphQLschema class was omitted such as the constructor
  */
-const generateSchemaObject = (rawGraphqlSchemaText: string, name: string): GraphQLSchemaAttrs => {
+export const generateSchemaObject:(rawGraphqlSchemaText: string, name: string)=>GraphQLSchemaAttrs = (rawGraphqlSchemaText: string, name: string): GraphQLSchemaAttrs => {
     const { encodedDirectivesSchemaText, directiveProperties } = parseDirectives(rawGraphqlSchemaText)
     const types = getFieldedTypes(encodedDirectivesSchemaText, directiveProperties)
     const unions = getUnions(encodedDirectivesSchemaText, directiveProperties)
@@ -25,8 +25,4 @@ const generateSchemaObject = (rawGraphqlSchemaText: string, name: string): Graph
     result.scalars = scalars
     result.unions = unions
     return result.getSchemaObject();
-}
-
-export {
-    generateSchemaObject
 }
