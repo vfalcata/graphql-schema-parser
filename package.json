@@ -1,6 +1,6 @@
 {
   "name": "graphql-schema-parser",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "parses a GraphQL schema file and generates an object that represents it. Follows 2018 GraphQL schema specification. Has no dependencies",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
